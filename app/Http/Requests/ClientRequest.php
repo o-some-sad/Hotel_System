@@ -21,17 +21,15 @@ class ClientRequest extends FormRequest
      */
     public function rules(): array
     {
-        // Client can make registration , we will need to know email , name ,
-        // avatar_image , country , gender all is required and email for sure
-        // is unique , and countries must be drop down list from the
-        // package , also gender must be Male Or Female
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:clients,email'],
             'password' => ['required', 'string', 'min:8'],
-            'nationalId' => ['required', 'string', 'unique:clients,nationalId'],
-            'country' => ['required', 'string'],
-            'gender' => ['required']
+            'nationalId' => ['required', 'string', 'size:10', 'unique:clients,nationalId'],
+            'country' => ['required', 'string', 'regex:/^[A-Za-z\s]+$/'],
+            'gender' => ['required'],
+            'image' => ['required', 'image', 'mimes:jpeg,jpg,gif,svg,webp', 'max:1024']
         ];
     }
 
@@ -45,8 +43,14 @@ class ClientRequest extends FormRequest
             'password.required' => 'Password is required',
             'password.min' => 'Password must be at least 8 character',
             'nationalId.required' => 'National ID is required',
+            'nationalId.size' => 'National ID should be 10 numbers',
             'nationalId.unique' => 'This national ID already taken',
             'country.required' => 'Country is required',
+            'country.regex' => 'Country must contain only letters and spaces.',
+            'image.required' => 'Image is required',
+            'image.image' => 'The file must be an image',
+            'image.mimes' => 'Allowed image types: jpeg, png, jpg, gif, svg, webp',
+            'image.max' => 'Image size must not exceed 1MB'
         ];
     }
 }

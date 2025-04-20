@@ -50,8 +50,9 @@ Route::middleware(['auth:client'])->group(function () {
     })->name('client.dashboard');
 });
 
-Route::get('/clients', [ClientController::class, 'index']);
+Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');;
 Route::get('/clients/create', [ClientController::class, 'create']);
+Route::post('clients/store', [ClientController::class, 'store']);
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

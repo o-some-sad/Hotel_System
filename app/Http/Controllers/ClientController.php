@@ -31,6 +31,8 @@ class ClientController extends Controller
     {
         $validatedRequest = $request->validated();
 
+        $validatedRequest['image'] = $request->file('image')->store('clients', 'public');
+
         Client::create($validatedRequest);
 
         return redirect()->route('clients.index')->with('message', 'Client created successfully');
