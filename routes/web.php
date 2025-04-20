@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -49,7 +50,8 @@ Route::middleware(['auth:client'])->group(function () {
     })->name('client.dashboard');
 });
 
-Route::get('/clients', [MangeClientController::class, 'index']);
+Route::get('/clients', [ClientController::class, 'index']);
+Route::get('/clients/create', [ClientController::class, 'create']);
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

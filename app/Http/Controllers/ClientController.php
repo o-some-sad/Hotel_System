@@ -23,7 +23,7 @@ class ClientController extends Controller
     //Will redirect user to form update
     public function create()
     {
-        return Inertia::render('mangeClients/createClients');
+        return Inertia::render('mangeClients/createClient');
     }
 
     //On user submit this function will be executed
@@ -32,6 +32,7 @@ class ClientController extends Controller
         $validatedRequest = $request->validated();
 
         Client::create($validatedRequest);
+
         return redirect()->route('clients.index')->with('message', 'Client created successfully');
     }
 
