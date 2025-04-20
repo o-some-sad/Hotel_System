@@ -7,12 +7,16 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 
 class Room extends Model
 {
 
     use SoftDeletes;
+    use HasFactory;
+
 
     public function created_by(): MorphTo
     {
@@ -28,6 +32,4 @@ class Room extends Model
     {
         return $this->hasMany(Reservation::class);
     }
-
-
 }

@@ -11,6 +11,8 @@ use app\Models\Floor;
 use app\Models\Ban;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 
 
@@ -19,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Admin extends Model
 {
     use SoftDeletes;
+    use HasFactory;
 
     public function managers(): HasMany
     {
@@ -55,6 +58,4 @@ class Admin extends Model
     {
         return $this->morphMany(Reservation::class, 'created_by');
     }
-
-
 }

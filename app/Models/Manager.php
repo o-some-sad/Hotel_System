@@ -10,11 +10,14 @@ use app\Models\Client;
 use app\Models\Floor;
 use app\Models\Ban;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 
 class Manager extends Model
 {
     use SoftDeletes;
+    use HasFactory;
 
     public function receptionists(): MorphMany
     {
@@ -40,5 +43,4 @@ class Manager extends Model
     {
         return $this->morphMany(Room::class, 'created_by');
     }
-
 }
