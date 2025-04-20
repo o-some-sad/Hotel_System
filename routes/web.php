@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\MangeClientController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -48,4 +49,7 @@ Route::middleware(['auth:client'])->group(function () {
     })->name('client.dashboard');
 });
 
+Route::get('/clients', [MangeClientController::class, 'index']);
+
+require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
