@@ -6,11 +6,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -38,11 +39,29 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    public function getTable()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return match ($this->type) {
+            'admin' => 'admins',
+            'manager' => 'managers',
+            'receptionist' => 'receptionists',
+            'client' => 'clients',
+            default => 'users',
+        };
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where('email', $value)->firstOrFail();
+    }
+
+    public function getAuthPassword()
+    {
+        return $this->password;
     }
 }

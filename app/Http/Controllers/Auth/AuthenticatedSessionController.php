@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,11 +17,11 @@ class AuthenticatedSessionController extends Controller
     /**
      * Show the login page.
      */
-    public function create(Request $request): Response
+    public function create(): Response
     {
         return Inertia::render('auth/Login', [
             'canResetPassword' => Route::has('password.request'),
-            'status' => $request->session()->get('status'),
+            'status' => session('status'),
         ]);
     }
 
@@ -29,11 +30,45 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        // Clear all existing cookies before attempting new login
+        $cookies = $request->cookies->all();
+        foreach ($cookies as $name => $value) {
+            cookie()->forget($name);
+        }
 
-        $request->session()->regenerate();
+        $credentials = $request->validated();
+        $email = $credentials['email'];
+        $domain = explode('@', $email)[1];
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Determine which guard to use based on email domain
+        $guard = match ($domain) {
+            'admin.com' => 'admin',
+            'manager.com' => 'manager',
+            'receptionist.com' => 'receptionist',
+            default => 'client',
+        };
+
+        // Logout from all guards before attempting new login
+        Auth::guard('admin')->logout();
+        Auth::guard('manager')->logout();
+        Auth::guard('receptionist')->logout();
+        Auth::guard('client')->logout();
+
+        // Attempt authentication with the specific guard
+        if (Auth::guard($guard)->attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+
+            return match ($domain) {
+                'admin.com' => redirect()->intended(route('admin.dashboard', absolute: false)),
+                'manager.com' => redirect()->intended(route('manager.dashboard', absolute: false)),
+                'receptionist.com' => redirect()->intended(route('receptionist.dashboard', absolute: false)),
+                default => redirect()->intended(route('client.dashboard', absolute: false)),
+            };
+        }
+
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ])->onlyInput('email');
     }
 
     /**
@@ -41,10 +76,21 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        // Logout from all guards
+        Auth::guard('admin')->logout();
+        Auth::guard('manager')->logout();
+        Auth::guard('receptionist')->logout();
+        Auth::guard('client')->logout();
 
+        // Invalidate the session
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        // Remove all cookies
+        $cookies = $request->cookies->all();
+        foreach ($cookies as $name => $value) {
+            cookie()->forget($name);
+        }
 
         return redirect('/');
     }

@@ -2,19 +2,35 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use app\Models\Receptionist;
-use app\Models\Client;
-use app\Models\Floor;
-use app\Models\Ban;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-
-class Manager extends Model
+class Manager extends Authenticatable
 {
-    use SoftDeletes;
+    use HasApiTokens, Notifiable, SoftDeletes;
+
+    protected $table = 'managers';
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'nationalId',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 
     public function receptionists(): MorphMany
     {
@@ -40,5 +56,4 @@ class Manager extends Model
     {
         return $this->morphMany(Room::class, 'created_by');
     }
-
 }
