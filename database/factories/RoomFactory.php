@@ -27,6 +27,7 @@ class RoomFactory extends Factory
             'created_by_type' => $createdByType,
             'created_by_id' => $createdById,
             'floor_id' => Floor::inRandomOrder()->first()?->id ?? Floor::factory(),
+            'price' => $this->faker->numberBetween(10000, 999999),
         ];
     }
 }

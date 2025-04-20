@@ -14,9 +14,10 @@ class ReservationController extends Controller
     {
         $client = Client::find(40); // suppose this is the logged-in client
         $reservations = $client->reservations()->with('room')->paginate(10); // get paginated reservations with room data
-        $rooms = Room::where('status', 'available')->get(); // get all available rooms;
+        $rooms = Room::where('is_available', 1)->get(); // get all available rooms;
         return Inertia::render('Homepage', [
-            'reservations' => $reservations
+            'reservations' => $reservations,
+           'rooms' => $rooms,
         ]);
     }
 
@@ -27,6 +28,25 @@ class ReservationController extends Controller
         $reservation->delete(); // delete the reservation, soft deletion
 
         return redirect()->route('client.reservations')->with('success', 'Reservation deleted successfully');
+    }
+
+    public function store(Request $request) // create reservation
+    {
+        // dd($request->all());
+        $client = Client::find(40); // get the client, should be the current logged-in client
+        $room = Room::find($request->room_id); // get the room
+        dd($room);
+        $reservation = new Reservation();
+        $reservation->client_id = $client->id;
+        $reservation->room_id = $room->id;
+        $reservation->check_in = $request->check_in;
+        $reservation->check_out = $request->check_out;
+        $reservation->accompanying_number = $request->accompanying_number;
+        $reservation->created_by_id = $reservation->client_id;
+        $reservation->created_by_type = 'App\Models\Client';
+        $reservation->price = $room->price;
+        $reservation->save(); // save the reservation
+        return redirect()->route('client.reservations')->with('success', 'Reservation created successfully');
     }
 
 

@@ -139,7 +139,7 @@
                 type="submit"
                 class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
               >
-                {{ isEditing ? 'Update' : 'Create' }}
+                {{ isEditing ? 'Update' : 'Checkout' }}
               </button>
             </div>
           </form>
@@ -166,7 +166,7 @@
     room_id: '',
     check_in: '',
     check_out: '',
-    accompanying_number: ''
+    accompanying_number: '',
   })
 
   function openModal(reservation = null) {
@@ -185,7 +185,7 @@
       form.value = {
         room_id: '',
         check_in: '',
-        check_out: ''
+        check_out: '',
       }
     }
   }
