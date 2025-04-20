@@ -39,6 +39,8 @@ class ReservationFactory extends Factory
             'price' => $this->faker->numberBetween(100, 1000),
             'accompanying_number' => $this->faker->numberBetween(0, 5),
             'is_approved' => $this->faker->boolean(),
+            'check_in' => $this->faker->date(),
+            'check_out' => $this->faker->date(),
         ];
     }
 }
