@@ -117,6 +117,16 @@
               />
             </div>
 
+            <div class="mb-4">
+                <label class="block mb-1 text-gray-700">Number of Guests:</label>
+                <input
+                  type="number"
+                  v-model="form.accompanying_number"
+                  class="w-full border-gray-300 rounded p-2"
+                  required
+                />
+              </div>
+
             <div class="flex justify-end gap-2">
               <button
                 type="button"
@@ -155,7 +165,8 @@
   const form = ref({
     room_id: '',
     check_in: '',
-    check_out: ''
+    check_out: '',
+    accompanying_number: ''
   })
 
   function openModal(reservation = null) {
