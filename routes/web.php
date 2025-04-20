@@ -3,7 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\MangeClientController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ReservationController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -49,7 +50,29 @@ Route::middleware(['auth:client'])->group(function () {
     })->name('client.dashboard');
 });
 
-Route::get('/clients', [MangeClientController::class, 'index']);
+Route::get('/clients', [ClientController::class, 'index']);
+
+
+
+
+
+// reservations routes for the logged-in client
+Route::prefix('client')->name('client.')->group(function () {
+    // Show all reservations for the logged-in client
+    Route::get('/reservations', [ReservationController::class, 'loggedInReservations'])->name('reservations');
+    // Show form to create a new reservation
+    Route::get('/reservations/create', [ReservationController::class, 'create'])->name('reservations.create');
+    // Store a new reservation
+    Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
+    // Show form to edit a reservation
+    Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
+    // Update a reservation
+    Route::patch('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+    // Show a specific reservation
+    Route::get('/reservations/{reservation}', [ReservationController::class, 'clientReservation'])->name('reservations.show');
+    // Delete a reservation
+    Route::delete('/reservations/{reservation}', [ReservationController::class, 'deleteLoggedInReservation'])->name('reservations.destroy');
+});
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
