@@ -27,9 +27,9 @@ class ClientRequest extends FormRequest
             'email' => ['required', 'email', 'unique:clients,email'],
             'password' => ['required', 'string', 'min:8'],
             'nationalId' => ['required', 'string', 'size:10', 'unique:clients,nationalId'],
-            'country' => ['required', 'string', 'regex:/^[A-Za-z\s]+$/'],
+            'country' => ['required', 'string', 'regex:/^[A-Za-z\s]+$/', 'exists:lc_countries_translations,name'],
             'gender' => ['required'],
-            'image' => ['required', 'image', 'mimes:jpeg,jpg,gif,svg,webp', 'max:1024']
+            'image' => ['nullable', 'image', 'mimes:jpeg,jpg,gif,svg,webp', 'max:1024']
         ];
     }
 
@@ -46,8 +46,8 @@ class ClientRequest extends FormRequest
             'nationalId.size' => 'National ID should be 10 numbers',
             'nationalId.unique' => 'This national ID already taken',
             'country.required' => 'Country is required',
+            'country.exists' => 'Invalid country please enter valid one',
             'country.regex' => 'Country must contain only letters and spaces.',
-            'image.required' => 'Image is required',
             'image.image' => 'The file must be an image',
             'image.mimes' => 'Allowed image types: jpeg, png, jpg, gif, svg, webp',
             'image.max' => 'Image size must not exceed 1MB'

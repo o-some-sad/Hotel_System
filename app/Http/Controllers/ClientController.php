@@ -31,15 +31,23 @@ class ClientController extends Controller
     {
         $validatedRequest = $request->validated();
 
-        $validatedRequest['image'] = $request->file('image')->store('clients', 'public');
-
+        if ($request->hasFile('image')) {
+            // User uploaded an image, store it
+            $validatedRequest['image'] = $request->file('image')->store('clients', 'public');
+        } else {
+            // No image uploaded, set image to null in database
+            $validatedRequest['image'] = null;
+        }
         Client::create($validatedRequest);
 
         return redirect()->route('clients.index')->with('message', 'Client created successfully');
     }
 
     //Redirect user to edit form
-    public function edit() {}
+    public function edit()
+    {
+        return Inertia::render('mangeClients/updateClient');
+    }
 
     //Logic of update will handle here
     public function update() {}

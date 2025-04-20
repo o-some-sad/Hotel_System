@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { router } from '@inertiajs/vue3';
 
 const columns = [
+    { id: "image", label: "Profile" },
     { id: "name", label: "Name" },
     { id: "email", label: "Email" },
     { id: "nationalId", label: "National ID" },
@@ -47,6 +48,12 @@ const handlePageChange = (url) => {
             </TableHeader>
             <TableBody>
                 <TableRow v-for="client in clients.data" :key="client.id" class="hover:bg-muted/50">
+                    <TableCell>
+                        <div class="avatar-wrapper">
+                            <img :src="client.image ? `/storage/${client.image}` : '/images/default.jpg'"
+                                :alt="`${client.name}'s profile`" class="h-10 w-10 rounded-full object-cover" />
+                        </div>
+                    </TableCell>
                     <TableCell>{{ client.name }}</TableCell>
                     <TableCell>{{ client.email }}</TableCell>
                     <TableCell>{{ client.nationalId }}</TableCell>
