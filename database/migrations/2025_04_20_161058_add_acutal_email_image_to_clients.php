@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('clients', function (Blueprint $table) {
-            $table->string(column: 'actual_email')->notNullable()->after('email')->unique();
             $table->string('image')->nullable()->after('nationalId')->unique();
-
         });
     }
 
