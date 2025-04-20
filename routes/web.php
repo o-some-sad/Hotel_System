@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ReservationController;
 
 Route::get('/', function () {
@@ -50,7 +50,10 @@ Route::middleware(['auth:client'])->group(function () {
     })->name('client.dashboard');
 });
 
-Route::get('/clients', [ClientController::class, 'index']);
+Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');;
+Route::get('/clients/create', [ClientController::class, 'create']);
+Route::post('clients/store', [ClientController::class, 'store']);
+
 
 
 

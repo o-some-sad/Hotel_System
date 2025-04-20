@@ -1,14 +1,15 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
 import {
     Table,
     TableBody,
+    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-
+import { Button } from '@/components/ui/button';
+import { router } from '@inertiajs/vue3';
 
 const columns = [
     { id: "name", label: "Name" },
@@ -18,12 +19,15 @@ const columns = [
     { id: "actions", label: "Actions" }
 ];
 
-const props = defineProps({ clients: Object })
+const createClient = () => {
+    router.visit('/clients/create');
+}
 
-// Log clients object to console
-onMounted(() => {
-    console.log('Clients data from controller:', props.clients.data[0]);
-});
+defineProps({ clients: Object })
+
+const handlePageChange = (url) => {
+    router.visit(url);
+}
 
 </script>
 
@@ -56,11 +60,34 @@ onMounted(() => {
                 </TableRow>
             </TableBody>
         </Table>
-        <!-- Example: Show pagination links -->
-        <div v-if="clients.links">
-            <button v-for="link in clients.links" :key="link.label" :disabled="!link.url"
-                @click="$inertia.visit(link.url)" v-html="link.label" />
+        <!-- Handle the pagination -->
+        <div class="mt-6 flex justify-center gap-2" v-if="clients.links && clients.links.length > 3">
+            <!-- Previous link -->
+            <button @click="clients.links[0].url && handlePageChange(clients.links[0].url)"
+                class="pagination-btn prev-btn" :disabled="!clients.links[0].url">
+                Previous
+            </button>
+
+            <!-- Page links -->
+            <template v-for="(link, i) in clients.links" :key="i">
+                <button v-if="i > 0 && i < clients.links.length - 1" @click="link.url && handlePageChange(link.url)"
+                    class="pagination-btn page-num" :class="{ 'active': link.active }" v-html="link.label"
+                    :disabled="!link.url"></button>
+            </template>
+
+            <!-- Next link -->
+            <button
+                @click="clients.links[clients.links.length - 1].url && handlePageChange(clients.links[clients.links.length - 1].url)"
+                class="pagination-btn next-btn" :disabled="!clients.links[clients.links.length - 1].url">
+                Next
+            </button>
         </div>
+
+        <!-- Add page information -->
+        <div class="text-sm text-gray-500 mt-2 text-center" v-if="clients.meta">
+            Showing {{ clients.meta.from }} to {{ clients.meta.to }} of {{ clients.meta.total }} clients
+        </div>
+
     </div>
 </template>
 
@@ -77,5 +104,36 @@ onMounted(() => {
 /* Make sure actions buttons are properly aligned */
 :deep(td:last-child) {
     text-align: right;
+}
+
+/* Add these pagination styles */
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f7fafc;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-btn.active {
+    background-color: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.prev-btn,
+.next-btn {
+    font-weight: 500;
 }
 </style>
