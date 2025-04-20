@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('admins', function (Blueprint $table) {
             $table->string('actual_email')->notNullable()->after('email')->unique();
-            $table->string('image')->nullable()->after('nationalId')->unique();
         });
     }
 
