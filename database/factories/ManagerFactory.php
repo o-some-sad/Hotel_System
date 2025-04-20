@@ -21,6 +21,8 @@ class ManagerFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
+            'actual_email' => $this->faker->unique()->safeEmail(),
+            'image' => $this->faker->imageUrl(),
             'password' => bcrypt('password'),
             'nationalId' => $this->faker->unique()->numerify('##########'),
             'remember_token' => Str::random(10),
