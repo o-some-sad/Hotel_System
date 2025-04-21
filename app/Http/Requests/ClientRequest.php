@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ClientRequest extends FormRequest
 {
@@ -22,11 +23,13 @@ class ClientRequest extends FormRequest
     public function rules(): array
     {
 
+        $clientId = $this->route('client');
+
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:clients,email'],
-            'password' => ['required', 'string', 'min:8'],
-            'nationalId' => ['required', 'string', 'size:10', 'unique:clients,nationalId'],
+            'email' => ['required', 'email', Rule::unique('clients', 'email')->ignore($clientId),],
+            'password' => [$this->isMethod('post') ? 'required' : 'nullable', 'string', 'min:8'],
+            'nationalId' => ['required', 'string', 'size:10', Rule::unique('clients', 'nationalId')->ignore($clientId),],
             'country' => ['required', 'string', 'regex:/^[A-Za-z\s]+$/', 'exists:lc_countries_translations,name'],
             'gender' => ['required'],
             'image' => ['nullable', 'image', 'mimes:jpeg,jpg,gif,svg,webp', 'max:1024']

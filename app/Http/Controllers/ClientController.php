@@ -6,6 +6,7 @@ use App\Http\Requests\ClientRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Client;
+use Illuminate\Support\Facades\Storage;
 
 class ClientController extends Controller
 {
@@ -44,18 +45,59 @@ class ClientController extends Controller
     }
 
     //Redirect user to edit form
-    public function edit()
+    public function edit($clientId)
     {
-        return Inertia::render('mangeClients/updateClient');
+        $client = Client::findOrFail($clientId);
+
+        return Inertia::render('mangeClients/updateClient', [
+            'client' => $client
+        ]);
     }
 
     //Logic of update will handle here
-    public function update() {}
+    public function update(ClientRequest $request, $clientId)
+    {
+        $client = Client::findOrFail($clientId);
+        $validatedRequest = $request->validated();
+        //If user enter a new password bcrypt it
+        if (!empty($validated['password'])) {
+            $client->password = bcrypt($validatedRequest['password']);
+        } else {
+            unset($validatedRequest['password']);
+        }
+        if ($request->hasFile('image')) {
+            if ($client->image) {
+                Storage::disk('public')->delete($client->image);
+            }
+            $validatedRequest['image'] = $request->file('image')->store('clients', 'public');
+        }
+
+        $client->update($validatedRequest);
+        return redirect()->route('clients.index')->with('message', 'Client updated successfully');
+    }
 
 
     //Redirect user to the ui of delete
-    public function delete() {}
+    public function delete($clientId)
+    {
+        $client = Client::findOrFail($clientId);
+
+        return Inertia::render('mangeClients/deleteClient', [
+            'client' => $client
+        ]);
+    }
 
     //Handle logic of delete here
-    public function destroy() {}
+    public function destroy($clientId)
+    {
+        $client = Client::findOrFail($clientId);
+
+        if ($client->image && Storage::disk('public')->exists($client->image)) {
+            Storage::disk('public')->delete($client->image);
+        }
+
+        $client->delete();
+
+        return to_route('clients.index')->with('success', 'Client deleted successfully');
+    }
 }

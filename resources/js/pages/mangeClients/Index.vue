@@ -24,6 +24,14 @@ const createClient = () => {
     router.visit('/clients/create');
 }
 
+const editClient = ($clientId) => {
+    router.visit(`/clients/${$clientId}/edit`)
+}
+
+const deleteClient = ($clientId) => {
+    router.visit(`/clients/${$clientId}/delete`);
+}
+
 defineProps({ clients: Object })
 
 const handlePageChange = (url) => {
@@ -60,8 +68,8 @@ const handlePageChange = (url) => {
                     <TableCell>{{ client.country }}</TableCell>
                     <TableCell>
                         <div class="flex space-x-2">
-                            <Button variant="outline" size="sm">Edit</Button>
-                            <Button variant="destructive" size="sm">Delete</Button>
+                            <Button @click="editClient(client.id)" variant="outline" size="sm">Edit</Button>
+                            <Button @click="deleteClient(client.id)" variant="destructive" size="sm">Delete</Button>
                         </div>
                     </TableCell>
                 </TableRow>
