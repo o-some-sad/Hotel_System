@@ -28,7 +28,7 @@ class ClientRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', Rule::unique('clients', 'email')->ignore($clientId),],
-            'password' => [$this->isMethod('post') ? 'required' : 'nullable', 'string', 'min:8'],
+            'password' => [$this->route('client') ? 'nullable' : 'required', 'string', 'min:8'],
             'nationalId' => ['required', 'string', 'size:10', Rule::unique('clients', 'nationalId')->ignore($clientId),],
             'country' => ['required', 'string', 'regex:/^[A-Za-z\s]+$/', 'exists:lc_countries_translations,name'],
             'gender' => ['required'],
