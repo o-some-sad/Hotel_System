@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReservationRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Client;
@@ -10,6 +11,51 @@ use App\Models\Room;
 
 class ReservationController extends Controller
 {
+
+    //Show all reservation to the stuff
+    public function index()
+    {
+        $reservations = Reservation::with(['client', 'room'])->paginate(10);
+        return Inertia::render('reservations/index', [
+            'reservations' => $reservations
+        ]);
+    }
+
+
+    public function edit($reservationId)
+    {
+        $reservation = Reservation::findOrFail($reservationId);
+
+        return Inertia::render('/reservations/updateReservation', ['reservation' => $reservation]);
+    }
+
+    public function update(ReservationRequest $request, $reservationId)
+    {
+        $reservation = Reservation::findOrFail($reservationId);
+        $validatedRequest = $request->validated();
+        Reservation::update($validatedRequest);
+        return to_route('reservation.index')->with('success', 'Reservation updated successfully');
+    }
+
+    public function delete($reservationId)
+    {
+        $reservation = Reservation::findOrFail($reservationId);
+
+        return Inertia::render('reservations/deleteReservations', [
+            'reservation' => $reservation
+        ]);
+    }
+
+    public function destroy($reservationId)
+    {
+        $reservation = Reservation::findOrFail($reservationId);
+
+        $reservation->delete();
+
+        return to_route('reservation.index')->with('success', 'Reservation deleted successfully');
+    }
+
+
     public function loggedInReservations() // show logged-in reservations
     {
         $client = Client::find(40); // suppose this is the logged-in client
@@ -17,7 +63,7 @@ class ReservationController extends Controller
         $rooms = Room::where('is_available', 1)->get(); // get all available rooms;
         return Inertia::render('Homepage', [
             'reservations' => $reservations,
-           'rooms' => $rooms,
+            'rooms' => $rooms,
         ]);
     }
 
@@ -48,8 +94,4 @@ class ReservationController extends Controller
         $reservation->save(); // save the reservation
         return redirect()->route('client.reservations')->with('success', 'Reservation created successfully');
     }
-
-
-
-
 }

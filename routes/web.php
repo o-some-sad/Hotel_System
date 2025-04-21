@@ -60,7 +60,8 @@ Route::get('/clients/{client}/delete', [ClientController::class, 'delete'])->nam
 Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
 
 //Reservation routes
-
+Route::get('/reservations/stuff', [ReservationController::class, 'index'])->name('reservation.index');
+Route::get('/reservation/{client}/delete', [ReservationController::class, 'delete'])->name('reservation.delete');
 
 
 
