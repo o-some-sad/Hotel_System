@@ -62,7 +62,8 @@ Route::middleware(['role:receptionist'])->group(function () {
 
 
 //Reservation routes
-
+Route::get('/reservations/stuff', [ReservationController::class, 'index'])->name('reservation.index');
+Route::get('/reservation/{client}/delete', [ReservationController::class, 'delete'])->name('reservation.delete');
 
 
 
