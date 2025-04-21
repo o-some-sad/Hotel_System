@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use app\Models\Receptionist;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,9 +13,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class Client extends Authenticatable
+class Client extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, Notifiable, SoftDeletes, HasFactory;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+
+    protected $guard = 'client';
 
     protected $table = 'clients';
 
@@ -25,7 +28,9 @@ class Client extends Authenticatable
         'nationalId',
         'country',
         'gender',
-        'image'
+        'image',
+        'created_by_type',
+        'email_verified_at',
     ];
 
     protected $hidden = [

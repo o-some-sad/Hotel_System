@@ -33,9 +33,9 @@ const handleImageChange = (event) => {
 };
 
 const submit = () => {
-    form.patch(`/clients/${props.client.id}/update`, {
+    form.post(`/clients/${props.client.id}/update`, {
         onSuccess: () => {
-            form.reset();
+            router.visit('/clients');
         }
     })
 }
@@ -52,7 +52,7 @@ const cancel = () => {
         <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
             <h1 class="text-2xl font-bold mb-6 text-center">Update Client</h1>
 
-            <form @submit.prevent="submit">
+            <form @submit.prevent="submit" enctype="multipart/form-data">
                 <!-- Name field -->
                 <div class="mb-4">
                     <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>

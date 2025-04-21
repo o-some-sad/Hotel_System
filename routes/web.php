@@ -7,6 +7,9 @@ use Inertia\Inertia;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\FloorController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\EmailVerificationPromptController;
+use App\Http\Controllers\VerifyEmailController;
+use App\Http\Controllers\EmailVerificationNotificationController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -75,15 +78,35 @@ Route::middleware(['auth:client'])->group(function () {
             ]
         ]);
     })->name('client.dashboard');
+
+    Route::get('/email/verify', [EmailVerificationPromptController::class, '__invoke'])
+        ->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+
+    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
 });
 
-Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');;
-Route::get('/clients/create', [ClientController::class, 'create']);
-Route::post('clients/store', [ClientController::class, 'store']);
-Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
-Route::patch('/clients/{client}/update', [ClientController::class, 'update'])->name('clients.update');
-Route::get('/clients/{client}/delete', [ClientController::class, 'delete'])->name('clients.delete');
-Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
+Route::middleware(['role:receptionist'])->group(function () {
+    Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
+    Route::get('/clients/create', [ClientController::class, 'create'])->name('clients.create');
+    Route::post('/clients/store', [ClientController::class, 'store'])->name('clients.store');
+    Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
+    Route::patch('/clients/{client}/update', [ClientController::class, 'update'])->name('clients.update');
+    Route::get('/clients/{client}/delete', [ClientController::class, 'delete'])->name('clients.delete');
+    Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
+});
+
+
+//Reservation routes
+Route::get('/reservations/stuff', [ReservationController::class, 'index'])->name('reservation.index');
+Route::get('/reservation/{client}/delete', [ReservationController::class, 'delete'])->name('reservation.delete');
+
+
 
 // reservations routes for the logged-in client
 Route::prefix('client')->name('client.')->group(function () {
@@ -96,7 +119,7 @@ Route::prefix('client')->name('client.')->group(function () {
     // Show form to edit a reservation
     Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
     // Update a reservation
-    Route::patch('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+    Route::patch('/reservations/{reservationId}', [ReservationController::class, 'update'])->name('reservations.update');
     // Show a specific reservation
     Route::get('/reservations/{reservation}', [ReservationController::class, 'clientReservation'])->name('reservations.show');
     // Delete a reservation

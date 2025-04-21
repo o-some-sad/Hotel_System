@@ -28,9 +28,10 @@
               <p class="text-gray-700">Reservation ID: {{ reservation.id }}</p>
               <p class="text-gray-500">Check-in: {{ reservation.check_in }}</p>
               <p class="text-gray-500">Check-out: {{ reservation.check_out }}</p>
+              <p class="text-gray-500">Price: {{ formatPrice(reservation.room.price) }}</p>
             </div>
 
-            <div class="space-x-2">
+            <div class="space-x-2" v-if="!isCheckoutPassed(reservation.check_out)">
               <button
                 @click="openModal(reservation)"
                 class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
@@ -43,6 +44,9 @@
               >
                 Remove
               </button>
+            </div>
+            <div v-else class="text-sm text-gray-500 italic">
+              Reservation completed
             </div>
           </div>
         </div>
@@ -78,12 +82,22 @@
           <h2 class="text-2xl font-bold mb-4">
             {{ isEditing ? 'Edit Reservation' : 'Create Reservation' }}
           </h2>
+
+          <!-- Display validation errors -->
+          <div v-if="Object.keys(errors).length > 0" class="mb-4 p-3 bg-red-50 text-red-700 rounded border border-red-200">
+            <p class="font-semibold mb-1">Please fix the following errors:</p>
+            <ul class="list-disc pl-5">
+              <li v-for="(error, key) in errors" :key="key">{{ error }}</li>
+            </ul>
+          </div>
+
           <form @submit.prevent="submitReservation">
             <div class="mb-4">
               <label class="block mb-1 text-gray-700">Room</label>
               <select
                 v-model="form.room_id"
                 class="w-full border-gray-300 rounded p-2"
+                :class="{'border-red-500': errors.room_id}"
                 required
               >
                 <option value="" disabled>Select a room</option>
@@ -95,6 +109,7 @@
                   {{ room.name }}
                 </option>
               </select>
+              <p v-if="errors.room_id" class="text-red-500 text-sm mt-1">{{ errors.room_id }}</p>
             </div>
 
             <div class="mb-4">
@@ -103,8 +118,10 @@
                 type="date"
                 v-model="form.check_in"
                 class="w-full border-gray-300 rounded p-2"
+                :class="{'border-red-500': errors.check_in}"
                 required
               />
+              <p v-if="errors.check_in" class="text-red-500 text-sm mt-1">{{ errors.check_in }}</p>
             </div>
 
             <div class="mb-4">
@@ -113,8 +130,10 @@
                 type="date"
                 v-model="form.check_out"
                 class="w-full border-gray-300 rounded p-2"
+                :class="{'border-red-500': errors.check_out}"
                 required
               />
+              <p v-if="errors.check_out" class="text-red-500 text-sm mt-1">{{ errors.check_out }}</p>
             </div>
 
             <div class="mb-4">
@@ -123,9 +142,11 @@
                   type="number"
                   v-model="form.accompanying_number"
                   class="w-full border-gray-300 rounded p-2"
+                  :class="{'border-red-500': errors.accompanying_number}"
                   required
                 />
-              </div>
+                <p v-if="errors.accompanying_number" class="text-red-500 text-sm mt-1">{{ errors.accompanying_number }}</p>
+            </div>
 
             <div class="flex justify-end gap-2">
               <button
@@ -139,7 +160,7 @@
                 type="submit"
                 class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
               >
-                {{ isEditing ? 'Update' : 'Checkout' }}
+                {{ isEditing ? 'Update' : 'Create' }}
               </button>
             </div>
           </form>
@@ -150,17 +171,19 @@
 
   <script setup>
   import { ref } from 'vue'
-  import { router } from '@inertiajs/vue3'
+  import { router, useForm } from '@inertiajs/vue3'
 
-  defineProps({
+  const props = defineProps({
     reservations: Object,
     rooms: Array, // passed from controller
+    errors: Object,
   })
 
   // Modal State
   const showModal = ref(false)
   const isEditing = ref(false)
   const editingId = ref(null)
+  const errors = ref({})
 
   const form = ref({
     room_id: '',
@@ -170,38 +193,48 @@
   })
 
   function openModal(reservation = null) {
-    showModal.value = true
-    if (reservation) {
-      isEditing.value = true
-      editingId.value = reservation.id
-      form.value = {
-        room_id: reservation.room_id,
-        check_in: reservation.check_in,
-        check_out: reservation.check_out
-      }
-    } else {
-      isEditing.value = false
-      editingId.value = null
-      form.value = {
-        room_id: '',
-        check_in: '',
-        check_out: '',
+      errors.value = {}
+      showModal.value = true
+      if (reservation) {
+        isEditing.value = true
+        editingId.value = reservation.id
+        form.value = {
+          room_id: Number(reservation.room_id), // Convert to number to ensure proper binding
+          check_in: reservation.check_in,
+          check_out: reservation.check_out,
+          accompanying_number: reservation.accompanying_number || '',
+        }
+      } else {
+        isEditing.value = false
+        editingId.value = null
+        form.value = {
+          room_id: '',
+          check_in: '',
+          check_out: '',
+          accompanying_number: '',
+        }
       }
     }
-  }
 
   function closeModal() {
     showModal.value = false
+    errors.value = {}
   }
 
   function submitReservation() {
     if (isEditing.value) {
-      router.put(route('client.reservations.update', editingId.value), form.value, {
-        onSuccess: closeModal
+      router.patch(route('client.reservations.update', editingId.value), form.value, {
+        onSuccess: closeModal,
+        onError: (e) => {
+          errors.value = e
+        }
       })
     } else {
       router.post(route('client.reservations.store'), form.value, {
-        onSuccess: closeModal
+        onSuccess: closeModal,
+        onError: (e) => {
+          errors.value = e
+        }
       })
     }
   }
@@ -214,5 +247,18 @@
 
   function goToPage(page) {
     router.get(route('client.reservations'), { page }, { preserveState: true })
+  }
+
+  function formatPrice(price){
+    const newPrice = price / 100;
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(newPrice);
+  }
+
+  function isCheckoutPassed(checkoutDate) {
+    if (!checkoutDate) return false
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Set to beginning of day for fair comparison
+    const checkout = new Date(checkoutDate)
+    return checkout < today
   }
   </script>
