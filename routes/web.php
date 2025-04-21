@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\FloorController;
+use App\Http\Controllers\RoomController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -18,6 +20,19 @@ Route::middleware(['auth:admin'])->group(function () {
             ]
         ]);
     })->name('admin.dashboard');
+
+    // Admin Floor Routes
+    Route::get('/admin/floors', [FloorController::class, 'index'])->name('admin.floors.index');
+    Route::post('/admin/floors', [FloorController::class, 'store'])->name('admin.floors.store');
+    Route::patch('/admin/floors/{floor}', [FloorController::class, 'update'])->name('admin.floors.update');
+    Route::delete('/admin/floors/{floor}', [FloorController::class, 'destroy'])->name('admin.floors.destroy');
+    Route::get('/admin/managers', [FloorController::class, 'getManagers'])->name('admin.managers.index');
+    
+    // Admin Room Routes
+    /*Route::get('/admin/rooms', [RoomController::class, 'index'])->name('admin.rooms.index');
+    Route::post('/admin/rooms', [RoomController::class, 'store'])->name('admin.rooms.store');
+    Route::patch('/admin/rooms/{room}', [RoomController::class, 'update'])->name('admin.rooms.update');
+    Route::delete('/admin/rooms/{room}', [RoomController::class, 'destroy'])->name('admin.rooms.destroy');*/
 });
 
 Route::middleware(['auth:manager'])->group(function () {
@@ -28,6 +43,18 @@ Route::middleware(['auth:manager'])->group(function () {
             ]
         ]);
     })->name('manager.dashboard');
+
+    // Manager Floor Routes
+    Route::get('/manager/floors', [FloorController::class, 'index'])->name('manager.floors.index');
+    Route::post('/manager/floors', [FloorController::class, 'store'])->name('manager.floors.store');
+    Route::patch('/manager/floors/{floor}', [FloorController::class, 'update'])->name('manager.floors.update');
+    Route::delete('/manager/floors/{floor}', [FloorController::class, 'destroy'])->name('manager.floors.destroy');
+    
+    // Manager Room Routes
+    /*Route::get('/manager/rooms', [RoomController::class, 'index'])->name('manager.rooms.index');
+    Route::post('/manager/rooms', [RoomController::class, 'store'])->name('manager.rooms.store');
+    Route::patch('/manager/rooms/{room}', [RoomController::class, 'update'])->name('manager.rooms.update');
+    Route::delete('/manager/rooms/{room}', [RoomController::class, 'destroy'])->name('manager.rooms.destroy');*/
 });
 
 Route::middleware(['auth:receptionist'])->group(function () {
@@ -57,9 +84,6 @@ Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->name('c
 Route::patch('/clients/{client}/update', [ClientController::class, 'update'])->name('clients.update');
 Route::get('/clients/{client}/delete', [ClientController::class, 'delete'])->name('clients.delete');
 Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
-
-
-
 
 // reservations routes for the logged-in client
 Route::prefix('client')->name('client.')->group(function () {
