@@ -41,7 +41,18 @@ const handleLogout = () => {
                         <!-- Logo -->
                         <div class="shrink-0 flex items-center">
                             <Link :href="route('home')">
-                            <img src="https://cdn-icons-png.flaticon.com/128/456/456212.png" alt="Hotel Logo" class="h-8 w-auto">
+                            <!-- <img src="https://cdn-icons-png.flaticon.com/128/456/456212.png" alt="Hotel Logo" class="h-8 w-auto"> -->
+                            <img
+                                v-if="$page.props.auth.user.image"
+                                :src="`http://localhost:8000/storage/${ $page.props.auth.user.image }`"
+                                alt="User Image"
+                                class="h-8 w-auto"/>
+                            <img
+                            v-else
+                            src="https://cdn-icons-png.flaticon.com/128/456/456212.png"
+                            alt="Default Image"
+                            class="h-8 w-auto"
+                            />
                             </Link>
                         </div>
 
