@@ -21,13 +21,13 @@ class RegisteredUserController extends Controller
     public function create(): Response
     {
         $countries = DB::table('lc_countries_translations')
-        ->select('name')
-        ->orderBy('name')
-        ->pluck('name');
+            ->select('name')
+            ->orderBy('name')
+            ->pluck('name');
 
-    return Inertia::render('auth/Register', [
-        'countries' => $countries
-    ]);
+        return Inertia::render('auth/Register', [
+            'countries' => $countries
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -46,14 +46,14 @@ class RegisteredUserController extends Controller
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $filename = time() . '.' . $image->getClientOriginalExtension();
-            
+
             // Save the original image
             $imagePath = 'clients/' . $filename;
-            
+
             $manager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
             $img = $manager->read($image->getRealPath());
-            $img->cover(300, 300);// Resize to square
-            
+            $img->cover(300, 300); // Resize to square
+
             // Save the processed image
             Storage::disk('public')->put($imagePath, $img->toJpeg());
         }
@@ -66,13 +66,13 @@ class RegisteredUserController extends Controller
             'country' => $request->country,
             'gender' => $request->gender,
             'image' => $imagePath,
-            'created_by_type'=> 'client',
+            'created_by_type' => 'client',
+            'email_verified_at' => null, // Ensure email is not verified initially
         ]);
 
-        event(new Registered($user));
+        // Send email verification notification
+        $user->sendEmailVerificationNotification();
 
-        // Auth::guard('client')->login($user);
-
-        return redirect()->route('login')->with('message', 'Registration successful. Please log in.');
+        return redirect()->route('login')->with('status', 'verification-link-sent');
     }
 }

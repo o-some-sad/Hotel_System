@@ -11,11 +11,13 @@ class CheckAuthentication
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!Auth::guard('admin')->check() && 
-            !Auth::guard('manager')->check() && 
-            !Auth::guard('receptionist')->check() && 
-            !Auth::guard('client')->check()) {
-            
+        if (
+            !Auth::guard('admin')->check() &&
+            !Auth::guard('manager')->check() &&
+            !Auth::guard('receptionist')->check() &&
+            !Auth::guard('client')->check()
+        ) {
+
             // Clear all cookies if not authenticated
             foreach ($request->cookies as $name => $value) {
                 Cookie::queue(Cookie::forget(name: $name));

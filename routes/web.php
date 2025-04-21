@@ -5,12 +5,15 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\EmailVerificationPromptController;
+use App\Http\Controllers\VerifyEmailController;
+use App\Http\Controllers\EmailVerificationNotificationController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-Route::middleware(['auth:admin,auth.check'])->group(function () {
+Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return Inertia::render('Admin/Dashboard', [
             'auth' => [
@@ -48,6 +51,17 @@ Route::middleware(['auth:client'])->group(function () {
             ]
         ]);
     })->name('client.dashboard');
+
+    Route::get('/email/verify', [EmailVerificationPromptController::class, '__invoke'])
+        ->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+
+    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
 });
 
 Route::middleware(['role:receptionist'])->group(function () {

@@ -77,10 +77,10 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-    // Get current guard name before logout
+        // Get current guard name before logout
         $currentGuard = null;
         foreach (['admin', 'manager', 'receptionist', 'client'] as $guard) {
-            if (Auth::guard($guard)->check()) {
+            if (Auth::guard(name: $guard)->check()) {
                 $currentGuard = $guard;
                 break;
             }
@@ -99,7 +99,7 @@ class AuthenticatedSessionController extends Controller
         // Clear all cookies
         $cookies = $request->cookies->all();
         foreach ($cookies as $name => $value) {
-            Cookie::queue(Cookie::forget($name));
+            Cookie::queue(parameters: Cookie::forget($name));
         }
 
         // Clear specific remember me tokens
