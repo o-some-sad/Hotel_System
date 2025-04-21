@@ -76,7 +76,8 @@ Route::middleware(['role:receptionist'])->group(function () {
 
 
 //Reservation routes
-
+Route::get('/reservations/stuff', [ReservationController::class, 'index'])->name('reservation.index');
+Route::get('/reservation/{client}/delete', [ReservationController::class, 'delete'])->name('reservation.delete');
 
 
 
@@ -91,7 +92,7 @@ Route::prefix('client')->name('client.')->group(function () {
     // Show form to edit a reservation
     Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
     // Update a reservation
-    Route::patch('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+    Route::patch('/reservations/{reservationId}', [ReservationController::class, 'update'])->name('reservations.update');
     // Show a specific reservation
     Route::get('/reservations/{reservation}', [ReservationController::class, 'clientReservation'])->name('reservations.show');
     // Delete a reservation

@@ -19,6 +19,7 @@
         "lwwcas/laravel-countries": "^4.12",
         "spatie/laravel-permission": "^6.17",
         "spatie/laravel-query-builder": "^6.3",
+        "stripe/stripe-php": "^17.1",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
