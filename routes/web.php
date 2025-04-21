@@ -78,7 +78,7 @@ Route::prefix('client')->name('client.')->group(function () {
     // Show form to edit a reservation
     Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
     // Update a reservation
-    Route::patch('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+    Route::patch('/reservations/{reservationId}', [ReservationController::class, 'update'])->name('reservations.update');
     // Show a specific reservation
     Route::get('/reservations/{reservation}', [ReservationController::class, 'clientReservation'])->name('reservations.show');
     // Delete a reservation

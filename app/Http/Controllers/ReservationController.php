@@ -54,6 +54,7 @@ class ReservationController extends Controller
     {
         $client = Client::find(40); // suppose this is the logged-in client
         $reservations = $client->reservations()->with('room')->paginate(10); // get paginated reservations with room data
+        // dd($client->room);
         $rooms = Room::where('is_available', 1)->get(); // get all available rooms;
         return Inertia::render('Homepage', [
             'reservations' => $reservations,
@@ -108,7 +109,7 @@ class ReservationController extends Controller
         $reservation->save(); // save the reservation
 
         // Update room availability
-        $room->is_available = false;
+        // $room->is_available = false;
         $room->save();
 
         return redirect()->route('client.reservations')->with('success', 'Reservation created successfully');
@@ -120,7 +121,7 @@ class ReservationController extends Controller
 
         $client = Client::find(40); // get the client, should be the current logged-in client
         $reservation = $client->reservations->find($reservationId); // get the reservation
-
+        
         if (!$reservation) {
             return redirect()->route('client.reservations')->with('error', 'Reservation not found');
         }
