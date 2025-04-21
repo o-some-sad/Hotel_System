@@ -192,28 +192,28 @@
   })
 
   function openModal(reservation = null) {
-    errors.value = {}
-    showModal.value = true
-    if (reservation) {
-      isEditing.value = true
-      editingId.value = reservation.id
-      form.value = {
-        room_id: reservation.room_id,
-        check_in: reservation.check_in,
-        check_out: reservation.check_out,
-        accompanying_number: reservation.accompanying_number || '',
-      }
-    } else {
-      isEditing.value = false
-      editingId.value = null
-      form.value = {
-        room_id: '',
-        check_in: '',
-        check_out: '',
-        accompanying_number: '',
+      errors.value = {}
+      showModal.value = true
+      if (reservation) {
+        isEditing.value = true
+        editingId.value = reservation.id
+        form.value = {
+          room_id: Number(reservation.room_id), // Convert to number to ensure proper binding
+          check_in: reservation.check_in,
+          check_out: reservation.check_out,
+          accompanying_number: reservation.accompanying_number || '',
+        }
+      } else {
+        isEditing.value = false
+        editingId.value = null
+        form.value = {
+          room_id: '',
+          check_in: '',
+          check_out: '',
+          accompanying_number: '',
+        }
       }
     }
-  }
 
   function closeModal() {
     showModal.value = false
@@ -222,7 +222,7 @@
 
   function submitReservation() {
     if (isEditing.value) {
-      router.put(route('client.reservations.update', editingId.value), form.value, {
+      router.patch(route('client.reservations.update', editingId.value), form.value, {
         onSuccess: closeModal,
         onError: (e) => {
           errors.value = e
