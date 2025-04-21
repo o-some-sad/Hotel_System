@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReservationRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Client;
@@ -12,6 +13,43 @@ use App\Http\Requests\UpdateReservationRequest;
 
 class ReservationController extends Controller
 {
+
+    //Show all reservation to the stuff
+    public function index()
+    {
+        $reservations = Reservation::with(['client', 'room'])->paginate(10);
+        return Inertia::render('reservations/index', [
+            'reservations' => $reservations
+        ]);
+    }
+
+
+    public function edit($reservationId)
+    {
+        $reservation = Reservation::findOrFail($reservationId);
+
+        return Inertia::render('/reservations/updateReservation', ['reservation' => $reservation]);
+    }
+
+    public function delete($reservationId)
+    {
+        $reservation = Reservation::findOrFail($reservationId);
+
+        return Inertia::render('reservations/deleteReservations', [
+            'reservation' => $reservation
+        ]);
+    }
+
+    public function destroy($reservationId)
+    {
+        $reservation = Reservation::findOrFail($reservationId);
+
+        $reservation->delete();
+
+        return to_route('reservation.index')->with('success', 'Reservation deleted successfully');
+    }
+
+
     public function loggedInReservations() // show logged-in reservations
     {
         $client = Client::find(40); // suppose this is the logged-in client

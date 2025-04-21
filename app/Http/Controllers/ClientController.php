@@ -65,11 +65,11 @@ class ClientController extends Controller
         } else {
             unset($validatedRequest['password']);
         }
-        if ($request->hasFile('image')) {
+        if ($validatedRequest->hasFile('image')) {
             if ($client->image) {
                 Storage::disk('public')->delete($client->image);
             }
-            $validatedRequest['image'] = $request->file('image')->store('clients', 'public');
+            $validatedRequest['image'] = $validatedRequest->file('image')->store('clients', 'public');
         } else {
             unset($validatedRequest['image']);
         }
