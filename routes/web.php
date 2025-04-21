@@ -53,8 +53,10 @@ Route::middleware(['auth:client'])->group(function () {
 Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');;
 Route::get('/clients/create', [ClientController::class, 'create']);
 Route::post('clients/store', [ClientController::class, 'store']);
-
-
+Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
+Route::patch('/clients/{client}/update', [ClientController::class, 'update'])->name('clients.update');
+Route::get('/clients/{client}/delete', [ClientController::class, 'delete'])->name('clients.delete');
+Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
 
 
 
