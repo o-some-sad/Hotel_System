@@ -7,21 +7,23 @@ const showingNavigationDropdown = ref(false);
 const handleLogout = () => {
     try {
         // Remove all cookies
-        document.cookie.split(";").forEach(function(c) { 
-            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-        });
-        
-        // Use Inertia's router to handle logout with the correct route name
         router.post(route('auth.logout'), {}, {
-            onError: (errors) => {
-                console.error('Logout error:', errors);
-                // Redirect to login page even if there's an error
-                window.location.href = '/login';
-            },
-            onSuccess: () => {
-                window.location.href = '/login';
-            }
-        });
+        preserveState: false,
+        preserveScroll: false,
+        onBefore: () => {
+            // Clear all cookies
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/;domain=" + window.location.hostname);
+            });
+        },
+        onSuccess: () => {
+            window.location.href = '/login';
+        },
+        onError: () => {
+            window.location.href = '/login';
+        }
+    });
     } catch (error) {
         console.error('Logout error:', error);
         window.location.href = '/login';
