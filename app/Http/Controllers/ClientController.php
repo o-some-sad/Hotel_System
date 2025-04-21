@@ -60,7 +60,7 @@ class ClientController extends Controller
         $client = Client::findOrFail($clientId);
         $validatedRequest = $request->validated();
         //If user enter a new password bcrypt it
-        if (!empty($validated['password'])) {
+        if (!empty($validatedRequest['password'])) {
             $client->password = bcrypt($validatedRequest['password']);
         } else {
             unset($validatedRequest['password']);
@@ -70,6 +70,8 @@ class ClientController extends Controller
                 Storage::disk('public')->delete($client->image);
             }
             $validatedRequest['image'] = $request->file('image')->store('clients', 'public');
+        } else {
+            unset($validatedRequest['image']);
         }
 
         $client->update($validatedRequest);

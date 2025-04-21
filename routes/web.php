@@ -61,6 +61,8 @@ Route::middleware(['role:receptionist'])->group(function () {
 });
 
 
+//Reservation routes
+
 
 
 
