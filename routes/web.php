@@ -10,6 +10,7 @@ use App\Http\Controllers\VerifyEmailController;
 use App\Http\Controllers\EmailVerificationNotificationController;
 use App\Http\Controllers\FloorController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\ManagerController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -91,6 +92,11 @@ Route::middleware(['auth:client'])->group(function () {
         ->name('verification.send');
 });
 
+Route::middleware(['role:manager'])->group(function () {
+    Route::resource( '/managers', ManagerController::class);
+
+});
+
 Route::middleware(['role:receptionist'])->group(function () {
     Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
     Route::get('/clients/create', [ClientController::class, 'create'])->name('clients.create');
@@ -100,6 +106,8 @@ Route::middleware(['role:receptionist'])->group(function () {
     Route::get('/clients/{client}/delete', [ClientController::class, 'delete'])->name('clients.delete');
     Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
 });
+
+
 
 
 //Reservation routes

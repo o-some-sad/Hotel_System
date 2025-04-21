@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('managers', function (Blueprint $table) {
             $table->string('actual_email')->notNullable()->after('email')->unique();
-            $table->string('image')->nullable()->after('nationalId')->unique();
+            $table->string('image')->nullable()->after('nationalId');
         });
     }
 
