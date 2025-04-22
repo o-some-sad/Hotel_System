@@ -102,4 +102,16 @@ class ClientController extends Controller
 
         return to_route('clients.index')->with('success', 'Client deleted successfully');
     }
+
+    //To help stuff get the client when reservation
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $clients = Client::where('name', 'like', "%{$query}%")
+            ->orWhere('email', 'like', "%{$query}%")
+            ->limit(10)
+            ->get(['id', 'name', 'email', 'image']);
+
+        return response()->json($clients);
+    }
 }

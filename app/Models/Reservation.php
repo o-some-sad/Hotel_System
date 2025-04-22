@@ -14,6 +14,19 @@ class Reservation extends Model
     use SoftDeletes;
     use HasFactory;
 
+    protected $fillable = [
+        'client_id',
+        'room_id',
+        'check_in',
+        'check_out',
+        'accompanying_number',
+        'price',
+        'notes',
+        'is_approved',
+        'created_by_id',
+        'created_by_type',
+    ];
+
 
     public function created_by(): MorphTo
     {

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ReservationRequest;
+
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Client;
@@ -14,40 +14,6 @@ use App\Http\Requests\UpdateReservationRequest;
 class ReservationController extends Controller
 {
 
-    //Show all reservation to the stuff
-    public function index()
-    {
-        $reservations = Reservation::with(['client', 'room'])->paginate(10);
-        return Inertia::render('reservations/index', [
-            'reservations' => $reservations
-        ]);
-    }
-
-
-    public function edit($reservationId)
-    {
-        $reservation = Reservation::findOrFail($reservationId);
-
-        return Inertia::render('/reservations/updateReservation', ['reservation' => $reservation]);
-    }
-
-    public function delete($reservationId)
-    {
-        $reservation = Reservation::findOrFail($reservationId);
-
-        return Inertia::render('reservations/deleteReservations', [
-            'reservation' => $reservation
-        ]);
-    }
-
-    public function destroy($reservationId)
-    {
-        $reservation = Reservation::findOrFail($reservationId);
-
-        $reservation->delete();
-
-        return to_route('reservation.index')->with('success', 'Reservation deleted successfully');
-    }
 
 
     public function loggedInReservations() // show logged-in reservations
@@ -83,6 +49,8 @@ class ReservationController extends Controller
         return redirect()->route('client.reservations')->with('success', 'Reservation deleted successfully');
     }
 
+
+
     public function store(StoreReservationRequest $request) // create reservation
     {
         $validated = $request->validated();
@@ -115,13 +83,17 @@ class ReservationController extends Controller
         return redirect()->route('client.reservations')->with('success', 'Reservation created successfully');
     }
 
+
+
+
+
+
     public function update($reservationId, UpdateReservationRequest $request) // update reservation
     {
         $validated = $request->validated();
 
         $client = Client::find(40); // get the client, should be the current logged-in client
         $reservation = $client->reservations->find($reservationId); // get the reservation
-        
         if (!$reservation) {
             return redirect()->route('client.reservations')->with('error', 'Reservation not found');
         }
