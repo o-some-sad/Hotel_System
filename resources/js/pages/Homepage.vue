@@ -28,6 +28,7 @@
               <p class="text-gray-700">Reservation ID: {{ reservation.id }}</p>
               <p class="text-gray-500">Check-in: {{ reservation.check_in }}</p>
               <p class="text-gray-500">Check-out: {{ reservation.check_out }}</p>
+              <p class="text-gray-500">Price: {{ formatPrice(reservation.room.price) }}</p>
             </div>
 
             <div class="space-x-2" v-if="!isCheckoutPassed(reservation.check_out)">
@@ -246,6 +247,11 @@
 
   function goToPage(page) {
     router.get(route('client.reservations'), { page }, { preserveState: true })
+  }
+
+  function formatPrice(price){
+    const newPrice = price / 100;
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(newPrice);
   }
 
   function isCheckoutPassed(checkoutDate) {

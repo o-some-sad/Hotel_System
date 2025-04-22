@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('receptionists', function (Blueprint $table) {
-            $table->string('actual_email')->notNullable()->after('email')->unique();
-            $table->string('image')->nullable()->after('nationalId');
-
+        Schema::table('clients', function (Blueprint $table) {
+            $table->timestamp('email_verified_at')->nullable();
         });
     }
 
@@ -23,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('receptionists', function (Blueprint $table) {
-            //
+        Schema::table('clients', function (Blueprint $table) {
+            $table->dropColumn('email_verified_at');
         });
     }
 };

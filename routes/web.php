@@ -6,12 +6,19 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReservationStuffController;
+use App\Http\Controllers\EmailVerificationPromptController;
+use App\Http\Controllers\VerifyEmailController;
+use App\Http\Controllers\EmailVerificationNotificationController;
+use App\Http\Controllers\FloorController;
+use App\Http\Controllers\RoomController;
+use App\Http\Controllers\ManagerController;
+use App\Http\Controllers\ReceptionistController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-Route::middleware(['auth:admin,auth.check'])->group(function () {
+Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return Inertia::render('Admin/Dashboard', [
             'auth' => [
@@ -19,6 +26,19 @@ Route::middleware(['auth:admin,auth.check'])->group(function () {
             ]
         ]);
     })->name('admin.dashboard');
+
+    // Admin Floor Routes
+    Route::get('/admin/floors', [FloorController::class, 'index'])->name('admin.floors.index');
+    Route::post('/admin/floors', [FloorController::class, 'store'])->name('admin.floors.store');
+    Route::patch('/admin/floors/{floor}', [FloorController::class, 'update'])->name('admin.floors.update');
+    Route::delete('/admin/floors/{floor}', [FloorController::class, 'destroy'])->name('admin.floors.destroy');
+    Route::get('/admin/managers', [FloorController::class, 'getManagers'])->name('admin.managers.index');
+
+    // Admin Room Routes
+    /*Route::get('/admin/rooms', [RoomController::class, 'index'])->name('admin.rooms.index');
+    Route::post('/admin/rooms', [RoomController::class, 'store'])->name('admin.rooms.store');
+    Route::patch('/admin/rooms/{room}', [RoomController::class, 'update'])->name('admin.rooms.update');
+    Route::delete('/admin/rooms/{room}', [RoomController::class, 'destroy'])->name('admin.rooms.destroy');*/
 });
 
 Route::middleware(['auth:manager'])->group(function () {
@@ -29,6 +49,18 @@ Route::middleware(['auth:manager'])->group(function () {
             ]
         ]);
     })->name('manager.dashboard');
+
+    // Manager Floor Routes
+    Route::get('/manager/floors', [FloorController::class, 'index'])->name('manager.floors.index');
+    Route::post('/manager/floors', [FloorController::class, 'store'])->name('manager.floors.store');
+    Route::patch('/manager/floors/{floor}', [FloorController::class, 'update'])->name('manager.floors.update');
+    Route::delete('/manager/floors/{floor}', [FloorController::class, 'destroy'])->name('manager.floors.destroy');
+
+    // Manager Room Routes
+    /*Route::get('/manager/rooms', [RoomController::class, 'index'])->name('manager.rooms.index');
+    Route::post('/manager/rooms', [RoomController::class, 'store'])->name('manager.rooms.store');
+    Route::patch('/manager/rooms/{room}', [RoomController::class, 'update'])->name('manager.rooms.update');
+    Route::delete('/manager/rooms/{room}', [RoomController::class, 'destroy'])->name('manager.rooms.destroy');*/
 });
 
 Route::middleware(['auth:receptionist'])->group(function () {
@@ -49,6 +81,22 @@ Route::middleware(['auth:client'])->group(function () {
             ]
         ]);
     })->name('client.dashboard');
+
+    Route::get('/email/verify', [EmailVerificationPromptController::class, '__invoke'])
+        ->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+
+    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+});
+
+Route::middleware(['role:manager'])->group(function () {
+    Route::resource('/managers', ManagerController::class);
+    Route::resource('/receptionists', ReceptionistController::class);
 });
 
 Route::middleware(['role:receptionist'])->group(function () {
