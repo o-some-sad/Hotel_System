@@ -17,9 +17,17 @@ class ReservationStuffController extends Controller
     //Show all reservation to the stuff
     public function index()
     {
+        [$user, $userType] = $this->getAuthenticatedUser();
+
         $reservations = Reservation::with(['client', 'room'])->paginate(10);
+
         return Inertia::render('reservations/index', [
-            'reservations' => $reservations
+            'reservations' => $reservations,
+            'currentUser' => [
+                'id' => $user->id,
+                'type' => $userType,
+                'isAdmin' => $userType ===  'App\Models\Admin'
+            ]
         ]);
     }
 
@@ -46,11 +54,13 @@ class ReservationStuffController extends Controller
         $days = $checkIn->diff($checkOut)->days ?: 1;
         $totalPrice = $room->price * $days;
 
+        [$user, $userType] = $this->getAuthenticatedUser();
+
 
         #TODOHandle who created the reservation later
         $data = array_merge($validated, [
-            'created_by_id' => $client->id,
-            'created_by_type' => 'App\Models\Client',
+            'created_by_id' => $user ? $user->id : null,
+            'created_by_type' => $userType,
             'is_approved' => 1,
             'price' => $totalPrice,
         ]);
@@ -68,6 +78,12 @@ class ReservationStuffController extends Controller
     public function edit($reservationId)
     {
         $reservation = Reservation::with(['client', 'room'])->findOrFail($reservationId);
+
+        [$user, $userType] = $this->getAuthenticatedUser();
+        if ($userType !== 'App\Models\Admin' && $reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType) {
+            return redirect()->route('stuff.reservation.index')->with('error', 'Your are not authorized to update this reservation');
+        }
+
         //return the valid rooms to the stuff and room in used too
         $rooms = Room::where('is_available', true)
             ->orWhere('id', $reservation->room_id)
@@ -119,6 +135,10 @@ class ReservationStuffController extends Controller
     public function delete($reservationId)
     {
         $reservation = Reservation::with(['client', 'room'])->findOrFail($reservationId);
+        [$user, $userType] = $this->getAuthenticatedUser();
+        if ($userType !== 'App\Models\Admin' && $reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType) {
+            return redirect()->route('stuff.reservation.index')->with('error', 'Your are not authorized to update this reservation');
+        }
 
         return Inertia::render('reservations/deleteReservation', [
             'reservation' => $reservation
@@ -129,6 +149,11 @@ class ReservationStuffController extends Controller
     {
         $reservation = Reservation::findOrFail($reservationId);
 
+        $room = Room::find($reservation->room_id);
+        if ($room) {
+            $room->is_available = true;
+            $room->save();
+        }
         $reservation->delete();
 
         return to_route('stuff.reservation.index')->with('success', 'Reservation deleted successfully');
@@ -144,5 +169,25 @@ class ReservationStuffController extends Controller
         $reservation->client->notify(new ReservationApproved($reservation));
 
         return to_route('stuff.reservation.index')->with('success', 'Reservation approved successfully');
+    }
+
+    private function getAuthenticatedUser()
+    {
+        //Detect the authenticated user
+        $user = null;
+        $userType = null;
+
+        if (auth()->guard('receptionist')->check()) {
+            $user = auth()->guard('receptionist')->user();
+            $userType = 'App\Models\Receptionist';
+        } else if (auth()->guard('manager')->check()) {
+            $user = auth()->guard('manager')->user();
+            $userType = 'App\Models\Manager';
+        } else if (auth()->guard('admin')->check()) {
+            $user = auth()->guard('admin')->user();
+            $userType = 'App\Models\Admin';
+        }
+
+        return [$user, $userType];
     }
 }

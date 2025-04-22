@@ -84,30 +84,12 @@ class AuthenticatedSessionController extends Controller
      * Destroy an authenticated session.
      */
     public function destroy(Request $request): RedirectResponse
-{
-    // Manually logout from the currently authenticated guard
-    $guards = ['admin', 'manager', 'receptionist', 'client'];
+    {
+        Auth::logout();
 
-    foreach ($guards as $guard) {
-        if (Auth::guard($guard)->check()) {
-            Auth::guard($guard)->logout();
-            break;
-        }
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
     }
-
-    // Invalidate session and regenerate token
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-
-    // Clear cookies manually
-    foreach ($request->cookies->all() as $name => $value) {
-        Cookie::queue(Cookie::forget($name));
-    }
-
-    // Optional: explicitly forget Laravel's session cookie
-    Cookie::queue(Cookie::forget(config('session.cookie')));
-
-    return redirect('/login');
-}
-
 }
