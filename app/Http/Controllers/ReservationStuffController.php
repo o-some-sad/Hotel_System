@@ -80,8 +80,8 @@ class ReservationStuffController extends Controller
         $reservation = Reservation::with(['client', 'room'])->findOrFail($reservationId);
 
         [$user, $userType] = $this->getAuthenticatedUser();
-        if ($userType !== 'App\Models\Admin' && $reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType) {
-            return redirect()->route('stuff.reservation.index')->with('error', 'Your are not authorized to update this reservation');
+        if ($userType !== 'App\Models\Admin' && ($reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType)) {
+            return redirect()->route('stuff.reservation.index')->with('error', 'You are not authorized to update this reservation');
         }
 
         //return the valid rooms to the stuff and room in used too
@@ -135,9 +135,11 @@ class ReservationStuffController extends Controller
     public function delete($reservationId)
     {
         $reservation = Reservation::with(['client', 'room'])->findOrFail($reservationId);
+
         [$user, $userType] = $this->getAuthenticatedUser();
-        if ($userType !== 'App\Models\Admin' && $reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType) {
-            return redirect()->route('stuff.reservation.index')->with('error', 'Your are not authorized to update this reservation');
+
+        if ($userType !== 'App\Models\Admin' && ($reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType)) {
+            return redirect()->route('stuff.reservation.index')->with('error', 'You are not authorized to update this reservation');
         }
 
         return Inertia::render('reservations/deleteReservation', [
@@ -148,6 +150,12 @@ class ReservationStuffController extends Controller
     public function destroy($reservationId)
     {
         $reservation = Reservation::findOrFail($reservationId);
+
+        [$user, $userType] = $this->getAuthenticatedUser();
+
+        if ($userType !== 'App\Models\Admin' && ($reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType)) {
+            return redirect()->route('stuff.reservation.index')->with('error', 'You are not authorized to update this reservation');
+        }
 
         $room = Room::find($reservation->room_id);
         if ($room) {
