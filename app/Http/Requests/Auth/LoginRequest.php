@@ -60,6 +60,17 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Check if the user is a client and not verified
+        if ($guard === 'client') {
+            $client = Auth::guard('client')->user();
+            if (!$client->verified_at) {
+                Auth::guard('client')->logout();
+                throw ValidationException::withMessages([
+                    'email' => 'Your account is pending approval. Please wait for administrator approval.',
+                ]);
+            }
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

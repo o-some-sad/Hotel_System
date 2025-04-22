@@ -105,6 +105,7 @@ Route::middleware(['role:receptionist'])->group(function () {
     Route::patch('/clients/{client}/update', [ClientController::class, 'update'])->name('clients.update');
     Route::get('/clients/{client}/delete', [ClientController::class, 'delete'])->name('clients.delete');
     Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
+    Route::post('/clients/{client}/approve', [ClientController::class, 'approve'])->name('clients.approve');
 });
 
 

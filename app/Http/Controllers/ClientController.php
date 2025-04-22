@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Client;
 use Illuminate\Support\Facades\Storage;
+use App\Notifications\ClientApproved;
 
 class ClientController extends Controller
 {
@@ -101,5 +102,23 @@ class ClientController extends Controller
         $client->delete();
 
         return to_route('clients.index')->with('success', 'Client deleted successfully');
+    }
+
+    public function approve(Client $client)
+    {
+        if (!$client->verified_at) {
+            $client->update([
+                'verified_at' => now()
+            ]);
+
+            // Send approval notification
+            $client->notify(new ClientApproved());
+
+            return redirect()->route('clients.index')
+                ->with('success', 'Client approved successfully and notification sent.');
+        }
+
+        return redirect()->route('clients.index')
+            ->with('info', 'Client is already approved.');
     }
 }

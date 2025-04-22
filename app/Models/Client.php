@@ -31,6 +31,7 @@ class Client extends Authenticatable implements MustVerifyEmail
         'image',
         'created_by_type',
         'email_verified_at',
+        'verified_at',
     ];
 
     protected $hidden = [
