@@ -5,9 +5,9 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ReservationController;
-use App\Http\Controllers\EmailVerificationPromptController;
-use App\Http\Controllers\VerifyEmailController;
-use App\Http\Controllers\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\FloorController;
 use App\Http\Controllers\RoomController;
 
@@ -32,10 +32,10 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/managers', [FloorController::class, 'getManagers'])->name('admin.managers.index');
     
     // Admin Room Routes
-    /*Route::get('/admin/rooms', [RoomController::class, 'index'])->name('admin.rooms.index');
+    Route::get('/admin/rooms', [RoomController::class, 'index'])->name('admin.rooms.index');
     Route::post('/admin/rooms', [RoomController::class, 'store'])->name('admin.rooms.store');
     Route::patch('/admin/rooms/{room}', [RoomController::class, 'update'])->name('admin.rooms.update');
-    Route::delete('/admin/rooms/{room}', [RoomController::class, 'destroy'])->name('admin.rooms.destroy');*/
+    Route::delete('/admin/rooms/{room}', [RoomController::class, 'destroy'])->name('admin.rooms.destroy');
 });
 
 Route::middleware(['auth:manager'])->group(function () {
@@ -54,10 +54,10 @@ Route::middleware(['auth:manager'])->group(function () {
     Route::delete('/manager/floors/{floor}', [FloorController::class, 'destroy'])->name('manager.floors.destroy');
     
     // Manager Room Routes
-    /*Route::get('/manager/rooms', [RoomController::class, 'index'])->name('manager.rooms.index');
+    Route::get('/manager/rooms', [RoomController::class, 'index'])->name('manager.rooms.index');
     Route::post('/manager/rooms', [RoomController::class, 'store'])->name('manager.rooms.store');
     Route::patch('/manager/rooms/{room}', [RoomController::class, 'update'])->name('manager.rooms.update');
-    Route::delete('/manager/rooms/{room}', [RoomController::class, 'destroy'])->name('manager.rooms.destroy');*/
+    Route::delete('/manager/rooms/{room}', [RoomController::class, 'destroy'])->name('manager.rooms.destroy');
 });
 
 Route::middleware(['auth:receptionist'])->group(function () {
