@@ -7,10 +7,11 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckBanStatus
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         $user = null;
         $userType = null;
@@ -39,6 +40,8 @@ class CheckBanStatus
             
             if ($activeBan) {
                 Auth::guard($guardName)->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
                 
                 // Format ban message with expiry info
                 $banMessage = 'Your account has been banned. Reason: ' . $activeBan->reason;

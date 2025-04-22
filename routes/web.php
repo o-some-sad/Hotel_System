@@ -45,7 +45,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::delete('/admin/bans/{ban}', [BanController::class, 'revoke'])->name('admin.bans.revoke');
 });
 
-Route::middleware(['auth:manager'])->group(function () {
+Route::middleware(['auth:manager', 'auth.ban'])->group(function () {
     Route::get('/manager/dashboard', function () {
         return Inertia::render('Manager/Dashboard', [
             'auth' => [
