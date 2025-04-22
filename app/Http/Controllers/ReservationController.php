@@ -18,7 +18,7 @@ class ReservationController extends Controller
 
     public function loggedInReservations() // show logged-in reservations
     {
-        $client = Client::find(40); // suppose this is the logged-in client
+        $client = Client::find($this->user['id']); // suppose this is the logged-in client
         $reservations = $client->reservations()->with('room')->paginate(10); // get paginated reservations with room data
         // dd($client->room);
         $rooms = Room::where('is_available', 1)->get(); // get all available rooms;
@@ -30,11 +30,14 @@ class ReservationController extends Controller
 
     public function deleteLoggedInReservation($reservationId) // delete logged-in reservations
     {
-        $client = Client::find(40); // get the client, should be the current logged-in client
+        $client = Client::find($this->user['id']); // get the client, should be the current logged-in client
         $reservation = $client->reservations->find($reservationId); // get the reservation
 
         if (!$reservation) {
             return redirect()->route('client.reservations')->with('error', 'Reservation not found');
+        }
+        if($reservation->payment_id != null){
+            return redirect()->route('client.reservations')->with('error', 'Reservation has been paid for, you cannot delete it');
         }
 
         // Make the room available again
@@ -55,7 +58,7 @@ class ReservationController extends Controller
     {
         $validated = $request->validated();
 
-        $client = Client::find(40); // get the client, should be the current logged-in client
+        $client = Client::find($this->user['id']); // get the client, should be the current logged-in client
         $room = Room::find($validated['room_id']); // get the room
 
         // Calculate price based on number of days
@@ -90,10 +93,12 @@ class ReservationController extends Controller
 
     public function update($reservationId, UpdateReservationRequest $request) // update reservation
     {
+
         $validated = $request->validated();
 
-        $client = Client::find(40); // get the client, should be the current logged-in client
+        $client = Client::find($this->user['id']); // get the client, should be the current logged-in client
         $reservation = $client->reservations->find($reservationId); // get the reservation
+
         if (!$reservation) {
             return redirect()->route('client.reservations')->with('error', 'Reservation not found');
         }

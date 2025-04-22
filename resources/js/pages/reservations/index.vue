@@ -39,7 +39,7 @@ const deleteReservation = (reservationId) => {
 }
 
 const toggleApproval = (reservation) => {
-    router.patch(`/reservations/${reservation.id}/approve`, {
+    router.patch(`/stuff/reservations/${reservation.id}/approve`, {
         is_approved: !reservation.is_approved
     })
 }
@@ -52,9 +52,6 @@ const formatPrice = (price) => {
     }).format(price)
 }
 
-const refuseReservation = (reservationId) => {
-    router.patch(`/reservations/${reservationId}/refuse`)
-}
 
 defineProps({
     reservations: Object
@@ -131,17 +128,6 @@ const handlePageChange = (url) => {
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                             stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M20 6 9 17l-5-5" />
-                                        </svg>
-                                    </button>
-                                    <button @click="refuseReservation(reservation.id)"
-                                        class="p-1 border border-gray-300 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100"
-                                        title="Refuse reservation">
-                                        <span class="sr-only">Refuse</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M18 6 6 18" />
-                                            <path d="m6 6 12 12" />
                                         </svg>
                                     </button>
                                 </template>

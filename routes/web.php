@@ -13,6 +13,7 @@ use App\Http\Controllers\FloorController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ManagerController;
 use App\Http\Controllers\ReceptionistController;
+use App\Http\Controllers\StripeCheckoutController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -121,6 +122,7 @@ Route::middleware(['auth:admin'])->prefix('stuff')->name('stuff.')->group(functi
     Route::patch('/reservations/{reservation}', [ReservationStuffController::class, 'update'])->name('reservations.update');
     Route::get('/reservations/{reservation}/delete', [ReservationStuffController::class, 'delete'])->name('reservation.delete');
     Route::delete('/reservations/{reservation}', [ReservationStuffController::class, 'destroy'])->name('reservation.destroy');
+    Route::patch('/reservations/{reservation}/approve', [ReservationStuffController::class, 'approveReservation'])->name('reservation.approve');
 });
 
 
@@ -129,7 +131,7 @@ Route::middleware(['auth:admin'])->prefix('stuff')->name('stuff.')->group(functi
 
 
 // reservations routes for the logged-in client
-Route::prefix('client')->name('client.')->group(function () {
+Route::prefix('client')->name('client.')->middleware(['auth:client'])->middleware(['role:client'])->group(function () {
     // Show all reservations for the logged-in client
     Route::get('/reservations', [ReservationController::class, 'loggedInReservations'])->name('reservations');
     // Show form to create a new reservation
@@ -145,6 +147,15 @@ Route::prefix('client')->name('client.')->group(function () {
     // Delete a reservation
     Route::delete('/reservations/{reservation}', [ReservationController::class, 'deleteLoggedInReservation'])->name('reservations.destroy');
 });
+
+
+
+
+// Update these routes
+Route::post('/stripe/checkout', [StripeCheckoutController::class, 'checkout'])->name('stripe.checkout');
+Route::get('/stripe/checkout', [StripeCheckoutController::class, 'checkout'])->name('stripe.checkout.get');
+Route::get('/stripe/success', [StripeCheckoutController::class, 'success'])->name('stripe.success');
+
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

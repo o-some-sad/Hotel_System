@@ -8,6 +8,8 @@ use App\Models\Client;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Http\Requests\stuffReservationRequest;
+use App\Http\Requests\UpdateStuffReservationRequest;
+use App\Notifications\ReservationApproved;
 use Illuminate\Auth\Events\Validated;
 
 class ReservationStuffController extends Controller
@@ -74,7 +76,7 @@ class ReservationStuffController extends Controller
         return Inertia::render('reservations/updateReservation', ['reservation' => $reservation, 'rooms' => $rooms]);
     }
 
-    public function update($reservationId, stuffReservationRequest $request) // update reservation
+    public function update($reservationId, UpdateStuffReservationRequest $request) // update reservation
     {
         $validated = $request->validated();
 
@@ -130,5 +132,17 @@ class ReservationStuffController extends Controller
         $reservation->delete();
 
         return to_route('stuff.reservation.index')->with('success', 'Reservation deleted successfully');
+    }
+
+    public function approveReservation($reservationId)
+    {
+        $reservation = Reservation::findOrFail($reservationId);
+        $reservation->is_approved = 1;
+        $reservation->save();
+
+        //send notification to client
+        $reservation->client->notify(new ReservationApproved($reservation));
+
+        return to_route('stuff.reservation.index')->with('success', 'Reservation approved successfully');
     }
 }
