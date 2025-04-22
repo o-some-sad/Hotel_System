@@ -58,7 +58,15 @@ class AuthenticatedSessionController extends Controller
         // Attempt authentication with the specific guard
         if (Auth::guard($guard)->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-
+            if ($guard === 'client') {
+                $client = Auth::guard('client')->user();
+                if (!$client->verified_at) {
+                    Auth::guard('client')->logout();
+                    return back()->withErrors([
+                        'email' => 'Your account is pending approval. Please wait for administrator approval.',
+                    ])->onlyInput('email');
+                }
+            }
             return match ($domain) {
                 'admin.com' => redirect()->intended(route('admin.dashboard', absolute: false)),
                 'manager.com' => redirect()->intended(route('manager.dashboard', absolute: false)),
