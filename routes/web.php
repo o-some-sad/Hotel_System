@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\ReservationStuffController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -60,10 +61,21 @@ Route::middleware(['role:receptionist'])->group(function () {
     Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
 });
 
+Route::get('/clients/search', [ClientController::class, 'search']);
 
-//Reservation routes
-Route::get('/reservations/stuff', [ReservationController::class, 'index'])->name('reservation.index');
-Route::get('/reservation/{client}/delete', [ReservationController::class, 'delete'])->name('reservation.delete');
+//Reservation routes for stuff only
+Route::middleware(['auth:admin'])->prefix('stuff')->name('stuff.')->group(function () {
+    Route::get('/reservations', [ReservationStuffController::class, 'index'])->name('reservation.index');
+    Route::get('/reservations/create', [ReservationStuffController::class, 'create'])->name('reservations.create');
+    Route::post('/reservations', [ReservationStuffController::class, 'store'])->name('reservations.store');
+    Route::get('/reservations/{reservation}/edit', [ReservationStuffController::class, 'edit'])->name('reservations.edit');
+    Route::patch('/reservations/{reservation}', [ReservationStuffController::class, 'update'])->name('reservations.update');
+    Route::get('/reservations/{reservation}/delete', [ReservationStuffController::class, 'delete'])->name('reservation.delete');
+    Route::delete('/reservations/{reservation}', [ReservationStuffController::class, 'destroy'])->name('reservation.destroy');
+});
+
+
+
 
 
 
