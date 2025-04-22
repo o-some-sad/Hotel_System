@@ -6,7 +6,7 @@
           @click="openModal()"
           class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow"
         >
-          + Create Reservation
+            Create Reservation
         </button>
       </div>
 
@@ -28,22 +28,46 @@
               <p class="text-gray-700">Reservation ID: {{ reservation.id }}</p>
               <p class="text-gray-500">Check-in: {{ reservation.check_in }}</p>
               <p class="text-gray-500">Check-out: {{ reservation.check_out }}</p>
-              <p class="text-gray-500">Price: {{ formatPrice(reservation.room.price) }}</p>
+              <p class="text-gray-500">Room Price: {{ formatPrice(reservation.room.price) }}</p>
+              <p class="text-gray-700 font-semibold">
+                Total Price: {{ calculateTotalPrice(reservation.room.price, reservation.check_in, reservation.check_out).formattedPrice }}
+                <span class="text-gray-500 text-sm">
+                  ( {{ calculateTotalPrice(reservation.room.price, reservation.check_in, reservation.check_out).days }} day(s) )
+                </span>
+              </p>
             </div>
 
             <div class="space-x-2" v-if="!isCheckoutPassed(reservation.check_out)">
               <button
+                v-if="reservation.payment_id == null"
                 @click="openModal(reservation)"
                 class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
               >
                 Edit
               </button>
               <button
+                v-if="reservation.payment_id == null"
                 @click="removeReservation(reservation.id)"
                 class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
               >
                 Remove
               </button>
+
+              <button
+                v-if=" reservation.payment_id == null"
+                @click="redirectToCheckout(reservation.id)"
+                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                >
+                Pay Now
+            </button>
+            <button
+            v-else
+            disabled
+            class="bg-green-500 text-white px-3 py-1 rounded"
+            >
+            Paid
+        </button>
+
             </div>
             <div v-else class="text-sm text-gray-500 italic">
               Reservation completed
@@ -254,6 +278,27 @@
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(newPrice);
   }
 
+  function calculateTotalPrice(roomPrice, checkIn, checkOut) {
+    // Convert dates to Date objects
+    const startDate = new Date(checkIn);
+    const endDate = new Date(checkOut);
+
+    // Calculate the difference in days
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // Calculate total price (days * room price)
+    // Use at least 1 day even if same-day checkout
+    const days = diffDays || 1;
+    const totalPrice = roomPrice * days;
+
+    return {
+      days,
+      totalPrice,
+      formattedPrice: formatPrice(totalPrice)
+    };
+  }
+
   function isCheckoutPassed(checkoutDate) {
     if (!checkoutDate) return false
     const today = new Date()
@@ -261,4 +306,30 @@
     const checkout = new Date(checkoutDate)
     return checkout < today
   }
+
+  function redirectToCheckout(reservationId) {
+    // Show a loading indicator or disable the button
+    const button = event.target;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Processing...';
+
+    // Use window.location for a full page redirect instead of Inertia
+    window.location.href = route('stripe.checkout') + '?reservation_id=' + reservationId;
+
+    // Alternative approach using Inertia
+    /*
+    router.post(route('stripe.checkout'), {
+      reservation_id: reservationId
+    }, {
+      preserveScroll: true,
+      onError: (errors) => {
+        button.disabled = false;
+        button.textContent = originalText;
+        alert('Failed to initiate checkout: ' + (errors.message || 'Unknown error'));
+      }
+    });
+    */
+  }
+
   </script>
