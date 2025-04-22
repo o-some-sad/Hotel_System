@@ -20,6 +20,8 @@ class Receptionist extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'actual_email',
+        'image',
         'password',
         'nationalId',
     ];

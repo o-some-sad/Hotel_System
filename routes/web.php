@@ -5,12 +5,14 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\ReservationStuffController;
 use App\Http\Controllers\EmailVerificationPromptController;
 use App\Http\Controllers\VerifyEmailController;
 use App\Http\Controllers\EmailVerificationNotificationController;
 use App\Http\Controllers\FloorController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ManagerController;
+use App\Http\Controllers\ReceptionistController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -31,7 +33,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::patch('/admin/floors/{floor}', [FloorController::class, 'update'])->name('admin.floors.update');
     Route::delete('/admin/floors/{floor}', [FloorController::class, 'destroy'])->name('admin.floors.destroy');
     Route::get('/admin/managers', [FloorController::class, 'getManagers'])->name('admin.managers.index');
-    
+
     // Admin Room Routes
     /*Route::get('/admin/rooms', [RoomController::class, 'index'])->name('admin.rooms.index');
     Route::post('/admin/rooms', [RoomController::class, 'store'])->name('admin.rooms.store');
@@ -53,7 +55,7 @@ Route::middleware(['auth:manager'])->group(function () {
     Route::post('/manager/floors', [FloorController::class, 'store'])->name('manager.floors.store');
     Route::patch('/manager/floors/{floor}', [FloorController::class, 'update'])->name('manager.floors.update');
     Route::delete('/manager/floors/{floor}', [FloorController::class, 'destroy'])->name('manager.floors.destroy');
-    
+
     // Manager Room Routes
     /*Route::get('/manager/rooms', [RoomController::class, 'index'])->name('manager.rooms.index');
     Route::post('/manager/rooms', [RoomController::class, 'store'])->name('manager.rooms.store');
@@ -93,8 +95,8 @@ Route::middleware(['auth:client'])->group(function () {
 });
 
 Route::middleware(['role:manager'])->group(function () {
-    Route::resource( '/managers', ManagerController::class);
-
+    Route::resource('/managers', ManagerController::class);
+    Route::resource('/receptionists', ReceptionistController::class);
 });
 
 Route::middleware(['role:receptionist'])->group(function () {
@@ -108,12 +110,21 @@ Route::middleware(['role:receptionist'])->group(function () {
     Route::post('/clients/{client}/approve', [ClientController::class, 'approve'])->name('clients.approve');
 });
 
+Route::get('/clients/search', [ClientController::class, 'search']);
+
+//Reservation routes for stuff only
+Route::middleware(['auth:admin'])->prefix('stuff')->name('stuff.')->group(function () {
+    Route::get('/reservations', [ReservationStuffController::class, 'index'])->name('reservation.index');
+    Route::get('/reservations/create', [ReservationStuffController::class, 'create'])->name('reservations.create');
+    Route::post('/reservations', [ReservationStuffController::class, 'store'])->name('reservations.store');
+    Route::get('/reservations/{reservation}/edit', [ReservationStuffController::class, 'edit'])->name('reservations.edit');
+    Route::patch('/reservations/{reservation}', [ReservationStuffController::class, 'update'])->name('reservations.update');
+    Route::get('/reservations/{reservation}/delete', [ReservationStuffController::class, 'delete'])->name('reservation.delete');
+    Route::delete('/reservations/{reservation}', [ReservationStuffController::class, 'destroy'])->name('reservation.destroy');
+});
 
 
 
-//Reservation routes
-Route::get('/reservations/stuff', [ReservationController::class, 'index'])->name('reservation.index');
-Route::get('/reservation/{client}/delete', [ReservationController::class, 'delete'])->name('reservation.delete');
 
 
 

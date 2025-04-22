@@ -120,5 +120,16 @@ class ClientController extends Controller
 
         return redirect()->route('clients.index')
             ->with('info', 'Client is already approved.');
+    //To help stuff get the client when reservation
+}
+public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $clients = Client::where('name', 'like', "%{$query}%")
+            ->orWhere('email', 'like', "%{$query}%")
+            ->limit(10)
+            ->get(['id', 'name', 'email', 'image']);
+
+        return response()->json($clients);
     }
 }

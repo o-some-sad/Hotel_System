@@ -25,16 +25,16 @@ const columns = [
 ]
 
 const createReservation = () => {
-    router.visit('/reservations/create')
+    router.visit('/stuff/reservations/create')
 }
 
 const editReservation = (reservationId) => {
-    router.visit(`/reservations/${reservationId}/edit`)
+    router.visit(`/stuff/reservations/${reservationId}/edit`)
 }
 
 const deleteReservation = (reservationId) => {
     if (confirm('Are you sure you want to delete this reservation? This action cannot be undone.')) {
-        router.delete(`/reservations/${reservationId}`)
+        router.visit(`/stuff/reservations/${reservationId}/delete`)
     }
 }
 
