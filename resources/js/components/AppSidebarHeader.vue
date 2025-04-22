@@ -5,9 +5,10 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { ShieldOff as ShieldOffIcon, BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed, ref, onMounted } from 'vue';
+
 
 // Import icons first to avoid undefined errors
 import { 
@@ -211,6 +212,17 @@ onMounted(() => {
         </SidebarMenuItem> -->
 
         <!-- Settings -->
+
+        <SidebarMenuItem
+            v-if="isAdmin || isManager"
+            :href="route(isAdmin ? 'admin.bans.index' : 'manager.bans.index')"
+            :active="route().current('*.bans.index')"
+            >
+            <template #icon>
+                <ShieldOffIcon class="h-4 w-4" />
+            </template>
+            Manage Bans
+        </SidebarMenuItem>
 
       </SidebarMenu>
     </SidebarContent>

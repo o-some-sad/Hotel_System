@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\FloorController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\BanController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -36,6 +37,12 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/rooms', [RoomController::class, 'store'])->name('admin.rooms.store');
     Route::patch('/admin/rooms/{room}', [RoomController::class, 'update'])->name('admin.rooms.update');
     Route::delete('/admin/rooms/{room}', [RoomController::class, 'destroy'])->name('admin.rooms.destroy');
+
+    // Admin Ban Routes
+    Route::get('/admin/bans', [BanController::class, 'index'])->name('admin.bans.index');
+    Route::get('/admin/bans/create', [BanController::class, 'create'])->name('admin.bans.create');
+    Route::post('/admin/bans', [BanController::class, 'store'])->name('admin.bans.store');
+    Route::delete('/admin/bans/{ban}', [BanController::class, 'revoke'])->name('admin.bans.revoke');
 });
 
 Route::middleware(['auth:manager'])->group(function () {
@@ -58,6 +65,12 @@ Route::middleware(['auth:manager'])->group(function () {
     Route::post('/manager/rooms', [RoomController::class, 'store'])->name('manager.rooms.store');
     Route::patch('/manager/rooms/{room}', [RoomController::class, 'update'])->name('manager.rooms.update');
     Route::delete('/manager/rooms/{room}', [RoomController::class, 'destroy'])->name('manager.rooms.destroy');
+
+    // Manager Ban Routes
+    Route::get('/bans', [BanController::class, 'index'])->name('bans.index');
+    Route::get('/bans/create', [BanController::class, 'create'])->name('bans.create');
+    Route::post('/bans', [BanController::class, 'store'])->name('bans.store');
+    Route::delete('/bans/{ban}', [BanController::class, 'revoke'])->name('bans.revoke');
 });
 
 Route::middleware(['auth:receptionist'])->group(function () {
