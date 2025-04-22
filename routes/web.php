@@ -122,6 +122,7 @@ Route::middleware(['auth:admin'])->prefix('stuff')->name('stuff.')->group(functi
     Route::patch('/reservations/{reservation}', [ReservationStuffController::class, 'update'])->name('reservations.update');
     Route::get('/reservations/{reservation}/delete', [ReservationStuffController::class, 'delete'])->name('reservation.delete');
     Route::delete('/reservations/{reservation}', [ReservationStuffController::class, 'destroy'])->name('reservation.destroy');
+    Route::patch('/reservations/{reservation}/approve', [ReservationStuffController::class, 'approveReservation'])->name('reservation.approve');
 });
 
 
