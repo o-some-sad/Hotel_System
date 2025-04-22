@@ -11,9 +11,8 @@ use Illuminate\Support\Facades\Log;
 class ManagerController extends Controller
 {
     
-    private function generateVirtualEmail(string $realEmail, int $id): string {
-        $username = strstr($realEmail, '@', true); 
-        return "{$username}.manager.{$id}@manager.com";
+    private function generateVirtualEmail(int $id): string {
+        return "manager.{$id}@manager.com";
     }
 
     public function index()
@@ -73,8 +72,8 @@ class ManagerController extends Controller
         $newManager = [
             'name' => $request->name,
             'actual_email' => $request->email,
-            'email' => $this->generateVirtualEmail($request->email, $newId),
-            'password' => password_hash($request->password, PASSWORD_DEFAULT),
+            'email' => $this->generateVirtualEmail( $newId),
+            'password' => bcrypt($request->password),
             'nationalId' => $request->nationalId,
             'image' => $imagePath,
             'admin_id' => $this->user['id'],
@@ -88,9 +87,7 @@ class ManagerController extends Controller
     public function update($id,Request $request)
     {
         $manager = Manager::find($id);
-        //print_r($manager);
-        //print_r($request->all());  
-        Log::info('Raw request data:', $request->all());      
+    
         if(! $manager) {
             return back()->with('failed', "Manager not found");
         }

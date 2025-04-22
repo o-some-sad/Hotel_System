@@ -11,6 +11,7 @@ use App\Http\Controllers\EmailVerificationNotificationController;
 use App\Http\Controllers\FloorController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ManagerController;
+use App\Http\Controllers\ReceptionistController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -94,7 +95,7 @@ Route::middleware(['auth:client'])->group(function () {
 
 Route::middleware(['role:manager'])->group(function () {
     Route::resource( '/managers', ManagerController::class);
-
+    Route::resource( '/receptionists', ReceptionistController::class);
 });
 
 Route::middleware(['role:receptionist'])->group(function () {
