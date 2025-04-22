@@ -20,6 +20,9 @@ class Manager extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'actual_email',
+        'image',
+        'admin_id',
         'password',
         'nationalId',
     ];

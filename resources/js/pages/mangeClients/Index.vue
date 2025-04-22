@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import {
     Table,
     TableBody,
@@ -17,6 +17,7 @@ const columns = [
     { id: "email", label: "Email" },
     { id: "nationalId", label: "National ID" },
     { id: "country", label: "Country" },
+    { id: "verified_at", label: "Status" },
     { id: "actions", label: "Actions" }
 ];
 
@@ -24,85 +25,82 @@ const createClient = () => {
     router.visit('/clients/create');
 }
 
-const editClient = ($clientId) => {
-    router.visit(`/clients/${$clientId}/edit`)
+const editClient = (clientId: number) => {
+    router.visit(`/clients/${clientId}/edit`)
 }
 
-const deleteClient = ($clientId) => {
-    router.visit(`/clients/${$clientId}/delete`);
+const deleteClient = (clientId: number) => {
+    router.visit(`/clients/${clientId}/delete`);
 }
 
-defineProps({ clients: Object })
+const approveClient = (clientId: number) => {
+    router.post(`/clients/${clientId}/approve`);
+}
 
-const handlePageChange = (url) => {
+defineProps<{ clients: any }>()
+
+const handlePageChange = (url: string) => {
     router.visit(url);
 }
 
 </script>
 
 <template>
-    <div class="container mx-auto py-6 px-4">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Client Management</h1>
-            <Button @click="createClient" variant="default">Create Client</Button>
+    <div class="p-4">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl font-bold">Manage Clients</h1>
+            <Button @click="createClient">Create Client</Button>
         </div>
 
         <Table>
-            <TableCaption>A list of all clients.</TableCaption>
+            <TableCaption>A list of all clients</TableCaption>
             <TableHeader>
                 <TableRow>
-                    <TableHead v-for="column in columns" :key="column.id">{{ column.label }}</TableHead>
+                    <TableHead v-for="column in columns" :key="column.id">
+                        {{ column.label }}
+                    </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
-                <TableRow v-for="client in clients.data" :key="client.id" class="hover:bg-muted/50">
+                <TableRow v-for="client in clients.data" :key="client.id">
                     <TableCell>
-                        <div class="avatar-wrapper">
-                            <img :src="client.image ? `/storage/${client.image}` : '/images/default.jpg'"
-                                :alt="`${client.name}'s profile`" class="h-10 w-10 rounded-full object-cover" />
-                        </div>
+                        <img :src="`http://localhost:8000/storage/${client.image }`" alt="Profile" class="w-10 h-10 rounded-full" />
                     </TableCell>
                     <TableCell>{{ client.name }}</TableCell>
                     <TableCell>{{ client.email }}</TableCell>
                     <TableCell>{{ client.nationalId }}</TableCell>
                     <TableCell>{{ client.country }}</TableCell>
                     <TableCell>
+                        <span :class="client.verified_at ? 'text-green-500' : 'text-red-500'">
+                            {{ client.verified_at ? 'Verified' : 'Unverified' }}
+                        </span>
+                    </TableCell>
+                    <TableCell>
                         <div class="flex space-x-2">
-                            <Button @click="editClient(client.id)" variant="outline" size="sm">Edit</Button>
-                            <Button @click="deleteClient(client.id)" variant="destructive" size="sm">Delete</Button>
+                            <Button variant="outline" @click="editClient(client.id)">Edit</Button>
+                            <Button variant="destructive" @click="deleteClient(client.id)">Delete</Button>
+                            <Button v-if="!client.verified_at" variant="secondary" @click="approveClient(client.id)">
+                                Approve
+                            </Button>
                         </div>
                     </TableCell>
                 </TableRow>
             </TableBody>
         </Table>
-        <!-- Handle the pagination -->
-        <div class="mt-6 flex justify-center gap-2" v-if="clients.links && clients.links.length > 3">
-            <!-- Previous link -->
-            <button @click="clients.links[0].url && handlePageChange(clients.links[0].url)"
-                class="pagination-btn prev-btn" :disabled="!clients.links[0].url">
-                Previous
-            </button>
 
-            <!-- Page links -->
-            <template v-for="(link, i) in clients.links" :key="i">
-                <button v-if="i > 0 && i < clients.links.length - 1" @click="link.url && handlePageChange(link.url)"
-                    class="pagination-btn page-num" :class="{ 'active': link.active }" v-html="link.label"
-                    :disabled="!link.url"></button>
-            </template>
-
-            <!-- Next link -->
-            <button
-                @click="clients.links[clients.links.length - 1].url && handlePageChange(clients.links[clients.links.length - 1].url)"
-                class="pagination-btn next-btn" :disabled="!clients.links[clients.links.length - 1].url">
-                Next
-            </button>
+        <div class="mt-4 flex justify-center">
+            <div class="flex space-x-2">
+                <Button 
+                    v-for="link in clients.links" 
+                    :key="link.label"
+                    variant="outline"
+                    :disabled="!link.url"
+                    @click="handlePageChange(link.url)"
+                >
+                    {{ link.label }}
+                </Button>
+            </div>
         </div>
-
-        <!-- Add page information -->
-        <div class="text-sm text-gray-500 mt-2 text-center" v-if="clients.meta">
-            Showing {{ clients.meta.from }} to {{ clients.meta.to }} of {{ clients.meta.total }} clients
-        </div>
-
     </div>
 </template>
 
