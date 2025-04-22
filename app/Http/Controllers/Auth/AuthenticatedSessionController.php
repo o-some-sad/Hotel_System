@@ -77,39 +77,10 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        // Get current guard name before logout
-        $currentGuard = null;
-        foreach (['admin', 'manager', 'receptionist', 'client'] as $guard) {
-            if (Auth::guard(name: $guard)->check()) {
-                $currentGuard = $guard;
-                break;
-            }
-        }
+        Auth::logout();
 
-        // Logout from all guards
-        Auth::guard('admin')->logout();
-        Auth::guard('manager')->logout();
-        Auth::guard('receptionist')->logout();
-        Auth::guard('client')->logout();
-
-        // Invalidate and regenerate session
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
-        // Clear all cookies
-        $cookies = $request->cookies->all();
-        foreach ($cookies as $name => $value) {
-            Cookie::queue(parameters: Cookie::forget($name));
-        }
-
-        // Clear specific remember me tokens
-        $guards = ['web', 'admin', 'manager', 'receptionist', 'client'];
-        foreach ($guards as $guard) {
-            Cookie::queue(Cookie::forget('remember_' . $guard));
-        }
-
-        // Clear session cookie
-        Cookie::queue(Cookie::forget(config('session.cookie')));
 
         return redirect('/login');
     }
