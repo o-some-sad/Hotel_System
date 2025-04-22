@@ -52,10 +52,23 @@ const formatPrice = (price) => {
     }).format(price)
 }
 
+// In your Vue component script
+const props = defineProps({
+    reservations: Object,
+    currentUser: Object
+});
 
-defineProps({
-    reservations: Object
-})
+const canEditReservation = (reservation) => {
+    return props.currentUser.isAdmin ||
+        (reservation.created_by_id === props.currentUser.id &&
+            reservation.created_by_type === props.currentUser.type);
+};
+
+const canDeleteReservation = (reservation) => {
+    return props.currentUser.isAdmin ||
+        (reservation.created_by_id === props.currentUser.id &&
+            reservation.created_by_type === props.currentUser.type);
+};
 
 const handlePageChange = (url) => {
     router.visit(url)
@@ -133,29 +146,34 @@ const handlePageChange = (url) => {
                                 </template>
 
                                 <!-- Edit and delete buttons visible for all reservations -->
-                                <button @click="editReservation(reservation.id)"
-                                    class="p-1 border border-gray-300 rounded-md hover:bg-gray-100">
-                                    <span class="sr-only">Edit</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                                        <path d="m15 5 4 4" />
-                                    </svg>
-                                </button>
-                                <button @click="deleteReservation(reservation.id)"
-                                    class="p-1 border border-red-300 bg-red-50 text-red-700 rounded-md hover:bg-red-100">
-                                    <span class="sr-only">Delete</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M3 6h18" />
-                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                        <line x1="10" x2="10" y1="11" y2="17" />
-                                        <line x1="14" x2="14" y1="11" y2="17" />
-                                    </svg>
-                                </button>
+                                <template v-if="canEditReservation(reservation)">
+                                    <button @click="editReservation(reservation.id)"
+                                        class="p-1 border border-gray-300 rounded-md hover:bg-gray-100">
+                                        <span class="sr-only">Edit</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                            <path d="m15 5 4 4" />
+                                        </svg>
+                                    </button>
+                                </template>
+
+                                <template v-if="canDeleteReservation(reservation)">
+                                    <button @click="deleteReservation(reservation.id)"
+                                        class="p-1 border border-red-300 bg-red-50 text-red-700 rounded-md hover:bg-red-100">
+                                        <span class="sr-only">Delete</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 6h18" />
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                            <line x1="10" y1="11" x2="10" y2="17" />
+                                            <line x1="14" y1="11" x2="14" y2="17" />
+                                        </svg>
+                                    </button>
+                                </template>
                             </div>
                         </TableCell>
                     </TableRow>

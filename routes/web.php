@@ -105,7 +105,7 @@ Route::middleware(['role:receptionist'])->group(function () {
     Route::get('/clients/create', [ClientController::class, 'create'])->name('clients.create');
     Route::post('/clients/store', [ClientController::class, 'store'])->name('clients.store');
     Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
-    Route::patch('/clients/{client}/update', [ClientController::class, 'update'])->name('clients.update');
+    Route::post('/clients/{client}/update', [ClientController::class, 'update'])->name('clients.update');
     Route::get('/clients/{client}/delete', [ClientController::class, 'delete'])->name('clients.delete');
     Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
     Route::post('/clients/{client}/approve', [ClientController::class, 'approve'])->name('clients.approve');
@@ -114,7 +114,7 @@ Route::middleware(['role:receptionist'])->group(function () {
 Route::get('/clients/search', [ClientController::class, 'search']);
 
 //Reservation routes for stuff only
-Route::middleware(['auth:admin'])->prefix('stuff')->name('stuff.')->group(function () {
+Route::middleware(['role:receptionist'])->prefix('stuff')->name('stuff.')->group(function () {
     Route::get('/reservations', [ReservationStuffController::class, 'index'])->name('reservation.index');
     Route::get('/reservations/create', [ReservationStuffController::class, 'create'])->name('reservations.create');
     Route::post('/reservations', [ReservationStuffController::class, 'store'])->name('reservations.store');
