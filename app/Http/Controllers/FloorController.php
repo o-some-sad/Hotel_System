@@ -230,7 +230,7 @@ public function store(Request $request)
         if (!$highestFloor) {
             return 'F0001'; // At least 4 digits
         }
-        // Extract the numeric part and increment
+
         $number = intval(substr($highestFloor, 1)) + 1;
         return 'F' . str_pad($number, 4, '0', STR_PAD_LEFT); // Ensuring 4 digits
     }

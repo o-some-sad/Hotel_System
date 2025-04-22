@@ -31,10 +31,19 @@
             <!-- User Selection based on type -->
             <div class="grid gap-2">
               <Label for="userId">Select User</Label>
+              <div v-if="isLoading" class="flex items-center text-sm text-muted-foreground p-2">
+                <span class="animate-spin mr-2">⟳</span> Loading users...
+              </div>
+              <div v-else-if="!form.user_type" class="text-sm text-muted-foreground p-2">
+                Select a user type first
+              </div>
+              <div v-else-if="availableUsers.length === 0" class="text-sm text-muted-foreground p-2">
+                No users available for this type
+              </div>
               <Select 
+                v-else
                 v-model="form.user_id" 
                 id="userId" 
-                :disabled="!form.user_type"
                 required
               >
                 <SelectTrigger>
@@ -46,7 +55,7 @@
                     :key="user.id" 
                     :value="user.id"
                   >
-                    {{ user.name }} ({{ user.email }})
+                    {{ user.name }}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -58,13 +67,13 @@
             <!-- Ban Reason -->
             <div class="grid gap-2">
               <Label for="reason">Reason</Label>
-              <Textarea 
+              <textarea 
                 id="reason" 
                 v-model="form.reason"
                 placeholder="Explain why this user is being banned..."
-                class="min-h-[100px]"
+                class="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 required
-              />
+              ></textarea>
               <p class="text-xs text-muted-foreground">
                 Please provide a detailed explanation for this ban. This will be recorded in the ban history.
               </p>
@@ -124,7 +133,6 @@
   } from '@/Components/ui/dialog'
   import { Button } from '@/Components/ui/button'
   import { Label } from '@/Components/ui/label'
-  //import { Textarea } from '@/Components/ui/textarea'
   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
   import { Loader2 as Loader2Icon } from 'lucide-vue-next'
   import axios from 'axios'
@@ -175,7 +183,7 @@
     await fetchUsers(newType)
   })
   
-  // Fetch users of a specific type
+  // Fetch users of a specific type - using Inertia routes instead of direct API calls
   const fetchUsers = async (type) => {
     if (type === 'client' && clients.value.length === 0) {
       await loadUsers(type, clients)
@@ -186,43 +194,84 @@
     }
   }
   
-  // Helper to load users from API
+  // Updated to use axios with proper routes like in the Floor component
   const loadUsers = async (type, targetRef) => {
     isLoading.value = true
     
     try {
-      const route = props.isAdmin ? 'admin' : 'manager'
-      const response = await axios.get(`/api/${route}/users/${type}`)
+      let url;
       
-      if (response.data && response.data.users) {
-        targetRef.value = response.data.users
+      if (type === 'manager' && props.isAdmin) {
+        // For managers, use the existing route that works in your Floor component
+        url = route('admin.managers.index');
+      } else {
+        // For other user types, we'll need equivalent routes
+        const routePrefix = props.isAdmin ? 'admin' : 'manager';
+        url = route(`${routePrefix}.${type}s.index`);
+      }
+      
+      const response = await axios.get(url);
+      
+      console.log(`Response for ${type}:`, response.data);
+      
+      if (response.data) {
+        // Adapt this based on your API response structure
+        if (type === 'manager' && response.data.managers) {
+          targetRef.value = response.data.managers;
+        } else if (response.data[`${type}s`]) {
+          targetRef.value = response.data[`${type}s`];
+        } else if (Array.isArray(response.data)) {
+          targetRef.value = response.data;
+        } else {
+          console.warn(`Unexpected data format for ${type}:`, response.data);
+          targetRef.value = [];
+        }
       }
     } catch (error) {
-      console.error(`Failed to load ${type}s:`, error)
+      console.error(`Failed to load ${type}s:`, error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
+      targetRef.value = []; // Set to empty array on error
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
-  }
+  };
   
   // Form submission handler
   const submitForm = () => {
-    const route = props.isAdmin ? 'admin.bans.store' : 'manager.bans.store'
+    const routeName = props.isAdmin ? 'admin.bans.store' : 'manager.bans.store';
     
-    form.post(route, {
+    console.log('Submitting form with data:', {
+      user_type: form.user_type,
+      user_id: form.user_id,
+      reason: form.reason,
+      duration: form.duration,
+    });
+    
+    form.post(route(routeName), {
       onSuccess: () => {
-        emit('update:show', false)
-        emit('created')
-        form.reset()
+        console.log('Ban created successfully');
+        emit('update:show', false);
+        emit('created');
+        form.reset();
+      },
+      onError: (errors) => {
+        console.error('Form submission errors:', errors);
       }
-    })
-  }
+    });
+  };
   
-  // Load all user types when component is mounted
-  if (props.show) {
-    fetchUsers('client')
-    fetchUsers('receptionist')
-    if (props.isAdmin) {
-      fetchUsers('manager')
+  // Initialize component
+  watch(() => props.show, (isShowing) => {
+    if (isShowing) {
+      // Reset form when dialog opens
+      form.reset();
+      
+      // Load users only when dialog is shown
+      if (form.user_type) {
+        fetchUsers(form.user_type);
+      }
     }
-  }
+  });
   </script>

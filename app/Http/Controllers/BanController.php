@@ -6,9 +6,11 @@ use App\Models\Ban;
 use App\Models\Client;
 use App\Models\Manager;
 use App\Models\Receptionist;
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Illuminate\Http\JsonResponse;
 
 class BanController extends Controller
 {
@@ -25,6 +27,11 @@ class BanController extends Controller
         }
         
         if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->whereHas('banned', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            })->orWhere('reason', 'like', "%{$search}%");
         }
         
         $bans = $query->latest()->paginate(10);
@@ -39,15 +46,7 @@ class BanController extends Controller
     {
         $isAdmin = Auth::guard('admin')->check();
         
-        $clients = Client::get(['id', 'name', 'email']);
-        $receptionists = Receptionist::get(['id', 'name', 'email']);
-        
-        $managers = $isAdmin ? Manager::get(['id', 'name', 'email']) : [];
-        
         return Inertia::render('Bans/Create', [
-            'clients' => $clients,
-            'receptionists' => $receptionists,
-            'managers' => $managers,
             'isAdmin' => $isAdmin
         ]);
     }
@@ -92,6 +91,7 @@ class BanController extends Controller
         $bannedById = $isAdmin ? Auth::guard('admin')->id() : Auth::guard('manager')->id();
         $bannedByType = $isAdmin ? 'App\\Models\\Admin' : 'App\\Models\\Manager';
         
+        // Create the ban with the correct field names
         Ban::create([
             'banned_id' => $validated['user_id'],
             'banned_type' => $bannedType,
@@ -102,13 +102,54 @@ class BanController extends Controller
             'is_permanent' => $isPermanent
         ]);
         
-        return redirect()->route('bans.index')->with('success', 'User banned successfully');
+        $routeName = $isAdmin ? 'admin.bans.index' : 'manager.bans.index';
+        
+        return redirect()->route($routeName)->with('success', 'User banned successfully');
     }
     
     public function revoke(Ban $ban)
     {
+        $isAdmin = Auth::guard('admin')->check();
         $ban->delete();
         
-        return redirect()->route('bans.index')->with('success', 'Ban revoked successfully');
+        $routeName = $isAdmin ? 'admin.bans.index' : 'manager.bans.index';
+        
+        return redirect()->route($routeName)->with('success', 'Ban revoked successfully');
+    }
+    
+    /**
+     * Get managers for ban creation
+     */
+    public function getManagers(): JsonResponse
+    {
+        $managers = Manager::select('id', 'name', 'email')->get();
+        
+        return response()->json([
+            'managers' => $managers
+        ]);
+    }
+    
+    /**
+     * Get clients for ban creation
+     */
+    public function getClients(): JsonResponse
+    {
+        $clients = Client::select('id', 'name', 'email')->get();
+        
+        return response()->json([
+            'clients' => $clients
+        ]);
+    }
+    
+    /**
+     * Get receptionists for ban creation
+     */
+    public function getReceptionists(): JsonResponse
+    {
+        $receptionists = Receptionist::select('id', 'name', 'email')->get();
+        
+        return response()->json([
+            'receptionists' => $receptionists
+        ]);
     }
 }

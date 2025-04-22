@@ -67,10 +67,10 @@ Route::middleware(['auth:manager'])->group(function () {
     Route::delete('/manager/rooms/{room}', [RoomController::class, 'destroy'])->name('manager.rooms.destroy');
 
     // Manager Ban Routes
-    Route::get('/bans', [BanController::class, 'index'])->name('bans.index');
-    Route::get('/bans/create', [BanController::class, 'create'])->name('bans.create');
-    Route::post('/bans', [BanController::class, 'store'])->name('bans.store');
-    Route::delete('/bans/{ban}', [BanController::class, 'revoke'])->name('bans.revoke');
+    Route::get('/manager/bans', [BanController::class, 'index'])->name('bans.index');
+    Route::get('/manager/bans/create', [BanController::class, 'create'])->name('bans.create');
+    Route::post('/manager/bans', [BanController::class, 'store'])->name('bans.store');
+    Route::delete('/manager/bans/{ban}', [BanController::class, 'revoke'])->name('bans.revoke');
 });
 
 Route::middleware(['auth:receptionist'])->group(function () {
@@ -141,3 +141,36 @@ Route::prefix('client')->name('client.')->group(function () {
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
+
+// Admin routes
+Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Other admin routes
+    
+    // Ban management for admins
+    Route::get('/bans', [BanController::class, 'index'])->name('bans.index');
+    Route::get('/bans/create', [BanController::class, 'create'])->name('bans.create');
+    Route::post('/bans', [BanController::class, 'store'])->name('bans.store');
+    Route::delete('/bans/{ban}', [BanController::class, 'revoke'])->name('bans.revoke');
+});
+
+// Manager routes
+Route::middleware(['auth:manager'])->prefix('manager')->name('manager.')->group(function () {
+    // Other manager routes
+    
+    // Ban management for managers
+    Route::get('/bans', [BanController::class, 'index'])->name('bans.index');
+    Route::get('/bans/create', [BanController::class, 'create'])->name('bans.create');
+    Route::post('/bans', [BanController::class, 'store'])->name('bans.store');
+    Route::delete('/bans/{ban}', [BanController::class, 'revoke'])->name('bans.revoke');
+    
+    // Routes for fetching users
+    Route::get('/clients', [BanController::class, 'getClients'])->name('clients.index');
+    Route::get('/receptionists', [BanController::class, 'getReceptionists'])->name('receptionists.index');
+});
+
+// Add routes for user selection in ban creation
+Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/managers', [BanController::class, 'getManagers'])->name('managers.index');
+    Route::get('/clients', [BanController::class, 'getClients'])->name('clients.index');
+    Route::get('/receptionists', [BanController::class, 'getReceptionists'])->name('receptionists.index');
+});

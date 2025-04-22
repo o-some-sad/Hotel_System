@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Ban extends Model
 {
-    protected $table = 'bans'; // Change to plural for Laravel convention
+    protected $table = 'bans';
     use SoftDeletes;
     use HasFactory;
     
