@@ -26,15 +26,15 @@ const formatDate = (dateString) => {
 }
 
 const confirmDelete = () => {
-    form.delete(`/stuff/reservations/${props.reservation.id}`, {
+    form.delete(`/staff/reservations/${props.reservation.id}`, {
         onSuccess: () => {
-            router.visit('/stuff/reservations');
+            router.visit('/staff/reservations');
         }
     });
 }
 
 const cancel = () => {
-    router.visit('/stuff/reservations');
+    router.visit('/staff/reservations');
 }
 </script>
 

@@ -54,7 +54,7 @@ class ClientController extends Controller
         $data = array_merge($validatedRequest, [
             'created_by_id' => $user ? $user->id : null,
             'created_by_type' => $userType,
-
+            'verified_at' => now(),
         ]);
 
         Client::create($data);
@@ -68,7 +68,7 @@ class ClientController extends Controller
         $client = Client::findOrFail($clientId);
         [$user, $userType] = $this->getAuthenticatedUser();
         if ($userType !== 'App\Models\Admin' && ($client->created_by_id !== $user->id || $client->created_by_type !== $userType)) {
-            return redirect()->route('stuff.reservation.index')->with('error', 'You are not authorized to update this reservation');
+            return redirect()->route('staff.reservation.index')->with('error', 'You are not authorized to update this reservation');
         }
 
         return Inertia::render('mangeClients/updateClient', [
@@ -107,7 +107,7 @@ class ClientController extends Controller
         $client = Client::findOrFail($clientId);
         [$user, $userType] = $this->getAuthenticatedUser();
         if ($userType !== 'App\Models\Admin' && ($client->created_by_id !== $user->id || $client->created_by_type !== $userType)) {
-            return redirect()->route('stuff.reservation.index')->with('error', 'You are not authorized to update this reservation');
+            return redirect()->route('staff.reservation.index')->with('error', 'You are not authorized to update this reservation');
         }
 
         return Inertia::render('mangeClients/deleteClient', [
@@ -125,7 +125,7 @@ class ClientController extends Controller
         }
         [$user, $userType] = $this->getAuthenticatedUser();
         if ($userType !== 'App\Models\Admin' && ($client->created_by_id !== $user->id || $client->created_by_type !== $userType)) {
-            return redirect()->route('stuff.reservation.index')->with('error', 'You are not authorized to update this reservation');
+            return redirect()->route('staff.reservation.index')->with('error', 'You are not authorized to update this reservation');
         }
 
         $client->delete();
@@ -149,7 +149,7 @@ class ClientController extends Controller
 
         return redirect()->route('clients.index')
             ->with('info', 'Client is already approved.');
-        //To help stuff get the client when reservation
+        //To help staff get the client when reservation
     }
     public function search(Request $request)
     {

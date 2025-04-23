@@ -98,15 +98,15 @@ const handleRoomChange = (roomId) => {
 
 // Update form submission
 const onSubmit = () => {
-    form.patch(`/stuff/reservations/${props.reservation.id}`, {
+    form.patch(`/staff/reservations/${props.reservation.id}`, {
         onSuccess: () => {
-            router.visit('/stuff/reservations');
+            router.visit('/staff/reservations');
         }
     });
 }
 
 const cancel = () => {
-    router.visit('/stuff/reservations');
+    router.visit('/staff/reservations');
 }
 
 

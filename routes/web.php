@@ -5,7 +5,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ReservationController;
-use App\Http\Controllers\ReservationStuffController;
+use App\Http\Controllers\ReservationStaffController;
 use App\Http\Controllers\EmailVerificationPromptController;
 use App\Http\Controllers\VerifyEmailController;
 use App\Http\Controllers\EmailVerificationNotificationController;
@@ -113,16 +113,16 @@ Route::middleware(['role:receptionist'])->group(function () {
 
 Route::get('/clients/search', [ClientController::class, 'search']);
 
-//Reservation routes for stuff only
-Route::middleware(['role:receptionist'])->prefix('stuff')->name('stuff.')->group(function () {
-    Route::get('/reservations', [ReservationStuffController::class, 'index'])->name('reservation.index');
-    Route::get('/reservations/create', [ReservationStuffController::class, 'create'])->name('reservations.create');
-    Route::post('/reservations', [ReservationStuffController::class, 'store'])->name('reservations.store');
-    Route::get('/reservations/{reservation}/edit', [ReservationStuffController::class, 'edit'])->name('reservations.edit');
-    Route::patch('/reservations/{reservation}', [ReservationStuffController::class, 'update'])->name('reservations.update');
-    Route::get('/reservations/{reservation}/delete', [ReservationStuffController::class, 'delete'])->name('reservation.delete');
-    Route::delete('/reservations/{reservation}', [ReservationStuffController::class, 'destroy'])->name('reservation.destroy');
-    Route::patch('/reservations/{reservation}/approve', [ReservationStuffController::class, 'approveReservation'])->name('reservation.approve');
+//Reservation routes for staff only
+Route::middleware(['role:receptionist'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('/reservations', [ReservationStaffController::class, 'index'])->name('reservation.index');
+    Route::get('/reservations/create', [ReservationStaffController::class, 'create'])->name('reservations.create');
+    Route::post('/reservations', [ReservationStaffController::class, 'store'])->name('reservations.store');
+    Route::get('/reservations/{reservation}/edit', [ReservationStaffController::class, 'edit'])->name('reservations.edit');
+    Route::patch('/reservations/{reservation}', [ReservationStaffController::class, 'update'])->name('reservations.update');
+    Route::get('/reservations/{reservation}/delete', [ReservationStaffController::class, 'delete'])->name('reservation.delete');
+    Route::delete('/reservations/{reservation}', [ReservationStaffController::class, 'destroy'])->name('reservation.destroy');
+    Route::patch('/reservations/{reservation}/approve', [ReservationStaffController::class, 'approveReservation'])->name('reservation.approve');
 });
 
 
