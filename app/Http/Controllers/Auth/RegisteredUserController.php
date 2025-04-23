@@ -15,7 +15,7 @@ use Intervention\Image\Facades\Image;
 use Intervention\Image\ImageManager;
 use Inertia\Inertia;
 use Inertia\Response;
-
+use App\Models\Room;
 class RegisteredUserController extends Controller
 {
     public function create(): Response
@@ -46,11 +46,18 @@ class RegisteredUserController extends Controller
         }
     
         if (Auth::guard('client')->check()) {
-            return Inertia::render('Client/Dashboard', [
+            // Redirect to the client reservation or homepage
+            $client = Client::find(auth()->guard('client')->user()['id']); // suppose this is the logged-in client
+            $reservations = $client->reservations()->with('room')->paginate(10); // get paginated reservations with room data
+        // dd($client->room);
+            $rooms = Room::where('is_available', 1)->get();
+            return Inertia::render('Homepage', [
+                'reservations' => $reservations,
+                'rooms' => $rooms,
                 'auth' => [
-                    'user' => auth()->guard('client')->user()
-                ]
-            ]);
+                'user' => auth()->guard('client')->user()
+            ]
+        ]);
         }
         $countries = DB::table('lc_countries_translations')
             ->select('name')

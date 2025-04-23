@@ -17,7 +17,7 @@ use App\Http\Controllers\ReceptionistController;
 use App\Http\Controllers\StripeCheckoutController;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    return redirect()->route('login');
 })->name('home');
 
 // Admin routes
@@ -37,19 +37,19 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::post('/floors', [FloorController::class, 'store'])->name('floors.store');
         Route::patch('/floors/{floor}', [FloorController::class, 'update'])->name('floors.update');
         Route::delete('/floors/{floor}', [FloorController::class, 'destroy'])->name('floors.destroy');
-        
+
         // Admin Room Routes
         Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
         Route::post('/rooms', [RoomController::class, 'store'])->name('rooms.store');
         Route::patch('/rooms/{room}', [RoomController::class, 'update'])->name('rooms.update');
         Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])->name('rooms.destroy');
-        
+
         // Admin Ban Routes
         Route::get('/bans', [BanController::class, 'index'])->name('bans.index');
         Route::get('/bans/create', [BanController::class, 'create'])->name('bans.create');
         Route::post('/bans', [BanController::class, 'store'])->name('bans.store');
         Route::delete('/bans/{ban}', [BanController::class, 'revoke'])->name('bans.revoke');
-        
+
         // User Selection Routes for Admin
         Route::get('/managers', [BanController::class, 'getManagers'])->name('managers.index');
         Route::get('/clients', [BanController::class, 'getClients'])->name('clients.index');
@@ -62,7 +62,7 @@ Route::get('/banned', function () {
     if (!session('ban_message')) {
         return redirect('/login');
     }
-    
+
     return Inertia::render('auth/Banned', [
         'banMessage' => session('ban_message'),
         'redirectAfter' => session('redirect_after', 10),
@@ -71,7 +71,7 @@ Route::get('/banned', function () {
 })->name('banned');
 
 // Manager routes
-Route::middleware(['auth:manager', 'ban.check'])->group( function () {
+Route::middleware(['auth:manager', 'ban.check'])->group(function () {
     // Manager Dashboard
     Route::get('/manager/dashboard', function () {
         return Inertia::render('Manager/Dashboard', [
@@ -88,19 +88,19 @@ Route::middleware(['auth:manager', 'ban.check'])->group( function () {
         Route::post('/floors', [FloorController::class, 'store'])->name('floors.store');
         Route::patch('/floors/{floor}', [FloorController::class, 'update'])->name('floors.update');
         Route::delete('/floors/{floor}', [FloorController::class, 'destroy'])->name('floors.destroy');
-    
+
         // Manager Room Routes
         Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
         Route::post('/rooms', [RoomController::class, 'store'])->name('rooms.store');
         Route::patch('/rooms/{room}', [RoomController::class, 'update'])->name('rooms.update');
         Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])->name('rooms.destroy');
-    
+
         // Manager Ban Routes - CORRECTED ROUTE NAMES HERE
         Route::get('/bans', [BanController::class, 'index'])->name('bans.index');
         Route::get('/bans/create', [BanController::class, 'create'])->name('bans.create');
         Route::post('/bans', [BanController::class, 'store'])->name('bans.store');
         Route::delete('/bans/{ban}', [BanController::class, 'revoke'])->name('bans.revoke');
-        
+
         // User Selection Routes for Manager
         Route::get('/clients', [BanController::class, 'getClients'])->name('clients.index');
         Route::get('/receptionists', [BanController::class, 'getReceptionists'])->name('receptionists.index');
@@ -120,13 +120,8 @@ Route::middleware(['auth:receptionist', 'ban.check'])->group(function () {
 
 // Client routes
 Route::middleware(['auth:client', 'ban.check'])->group(function () {
-    Route::get('/client/dashboard', function () {
-        return Inertia::render('Client/Dashboard', [
-            'auth' => [
-                'user' => auth()->guard('client')->user()
-            ]
-        ]);
-    })->name('client.dashboard');
+    Route::get('/reservations', [ReservationStaffController::class, 'index'])->name('client.reservation.index');
+
 
     Route::get('/email/verify', [EmailVerificationPromptController::class, '__invoke'])
         ->name('verification.notice');
@@ -168,7 +163,7 @@ Route::middleware(['role:receptionist'])->prefix('staff')->name('staff.')->group
     Route::get('/reservations/{reservation}/delete', [ReservationStaffController::class, 'delete'])->name('reservation.delete');
     Route::delete('/reservations/{reservation}', [ReservationStaffController::class, 'destroy'])->name('reservation.destroy');
     Route::patch('/reservations/{reservation}/approve', [ReservationStaffController::class, 'approveReservation'])->name('reservation.approve');
-}); 
+});
 
 Route::middleware(['auth:admin'])->prefix('staff')->name('staff.')->group(function () {
     Route::get('/reservations', [ReservationStaffController::class, 'index'])->name('reservation.index');

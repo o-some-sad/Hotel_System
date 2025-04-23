@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Cookie;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Client;
+use App\Models\Room;
+use App\Http\Controllers\ReservationController;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -45,11 +48,23 @@ class AuthenticatedSessionController extends Controller
     }
 
     if (Auth::guard('client')->check()) {
-        return Inertia::render('Client/Dashboard', [
+        // Redirect to the client reservation or homepage
+        $client = Client::find(auth()->guard('client')->user()['id']); // suppose this is the logged-in client
+        $reservations = $client->reservations()->with('room')->paginate(10); // get paginated reservations with room data
+        // dd($client->room);
+        $rooms = Room::where('is_available', 1)->get();
+        return Inertia::render('Homepage', [
+            'reservations' => $reservations,
+            'rooms' => $rooms,
             'auth' => [
                 'user' => auth()->guard('client')->user()
             ]
         ]);
+        // return Inertia::render('Homepage', [
+        //     'auth' => [
+        //         'user' => auth()->guard('client')->user()
+        //     ]
+        // ]);
     }
 
     return Inertia::render('auth/Login', [
@@ -103,7 +118,7 @@ class AuthenticatedSessionController extends Controller
                 'admin.com' => redirect()->intended(route('admin.dashboard', absolute: false)),
                 'manager.com' => redirect()->intended(route('manager.dashboard', absolute: false)),
                 'receptionist.com' => redirect()->intended(route('receptionist.dashboard', absolute: false)),
-                default => redirect()->intended(route('client.dashboard', absolute: false)),
+                default => redirect()->intended(route('client.reservations', absolute: false)),
             };
         }
 
