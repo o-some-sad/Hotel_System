@@ -57,8 +57,21 @@ Route::middleware(['auth:admin'])->group(function () {
     });
 });
 
+// Ban notice page
+Route::get('/banned', function () {
+    if (!session('ban_message')) {
+        return redirect('/login');
+    }
+    
+    return Inertia::render('auth/Banned', [
+        'banMessage' => session('ban_message'),
+        'redirectAfter' => session('redirect_after', 10),
+        'redirectTo' => session('redirect_to', '/login')
+    ]);
+})->name('banned');
+
 // Manager routes
-Route::middleware(['auth:manager'])->group(function () {
+Route::middleware(['auth:manager', 'ban.check'])->group( function () {
     // Manager Dashboard
     Route::get('/manager/dashboard', function () {
         return Inertia::render('Manager/Dashboard', [
@@ -95,7 +108,7 @@ Route::middleware(['auth:manager'])->group(function () {
 });
 
 // Receptionist routes
-Route::middleware(['auth:receptionist', 'auth.ban'])->group(function () {
+Route::middleware(['auth:receptionist', 'ban.check'])->group(function () {
     Route::get('/receptionist/dashboard', function () {
         return Inertia::render('Receptionist/Dashboard', [
             'auth' => [
@@ -106,7 +119,7 @@ Route::middleware(['auth:receptionist', 'auth.ban'])->group(function () {
 });
 
 // Client routes
-Route::middleware(['auth:client', 'auth.ban'])->group(function () {
+Route::middleware(['auth:client', 'ban.check'])->group(function () {
     Route::get('/client/dashboard', function () {
         return Inertia::render('Client/Dashboard', [
             'auth' => [

@@ -17,7 +17,6 @@ class CheckBanStatus
         $userType = null;
         $guardName = null;
         
-        // Check which guard is active
         foreach (['client', 'receptionist', 'manager'] as $guard) {
             if (Auth::guard($guard)->check()) {
                 $user = Auth::guard($guard)->user();
@@ -43,7 +42,6 @@ class CheckBanStatus
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
                 
-                // Format ban message with expiry info
                 $banMessage = 'Your account has been banned. Reason: ' . $activeBan->reason;
                 
                 if (!$activeBan->is_permanent && $activeBan->expires_at) {
@@ -53,13 +51,11 @@ class CheckBanStatus
                     $banMessage .= ' This is a permanent ban.';
                 }
                 
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'message' => $banMessage
-                    ], 403);
-                }
-                
-                return redirect('/login')->with('error', $banMessage);
+                return redirect()->route('banned')->with([
+                    'ban_message' => $banMessage,
+                    'redirect_after' => 10,
+                    'redirect_to' => route('login')
+                ]);
             }
         }
         
