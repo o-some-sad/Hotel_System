@@ -20,6 +20,38 @@ class RegisteredUserController extends Controller
 {
     public function create(): Response
     {
+        if (Auth::guard('admin')->check()) {
+           //redirect to admin dashboard
+            return Inertia::render('Admin/Dashboard', [
+                'auth' => [
+                    'user' => auth()->guard('admin')->user()
+                ]
+            ]);
+        }
+    
+        if (Auth::guard('manager')->check()) {
+            return Inertia::render('Manager/Dashboard', [
+                'auth' => [
+                    'user' => auth()->guard('manager')->user()
+                ]
+            ]);
+        }
+    
+        if (Auth::guard('receptionist')->check()) {
+            return Inertia::render('Receptionist/Dashboard', [
+                'auth' => [
+                    'user' => auth()->guard('receptionist')->user()
+                ]
+            ]);
+        }
+    
+        if (Auth::guard('client')->check()) {
+            return Inertia::render('Client/Dashboard', [
+                'auth' => [
+                    'user' => auth()->guard('client')->user()
+                ]
+            ]);
+        }
         $countries = DB::table('lc_countries_translations')
             ->select('name')
             ->orderBy('name')
