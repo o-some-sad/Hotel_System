@@ -19,12 +19,7 @@ const props = defineProps({
 
 // Authorization check function
 const canManageClient = (client) => {
-    console.log('Client:', client.created_by_id, typeof client.created_by_id);
-    console.log('User:', props.currentUser.id, typeof props.currentUser.id);
-    console.log('Types:', client.created_by_type, props.currentUser.type);
-
     // Admin can manage any client
-    console.log(client.created_by_id);
     if (props.currentUser.isAdmin) {
 
         return true;
