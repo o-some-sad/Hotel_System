@@ -44,8 +44,8 @@ import { router, usePage } from '@inertiajs/vue3';
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle, 
   DialogFooter, DialogDescription 
-} from '@/Components/ui/dialog';
-import { Button } from '@/Components/ui/button';
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { AlertTriangle as AlertTriangleIcon } from 'lucide-vue-next';
 
 const props = defineProps({

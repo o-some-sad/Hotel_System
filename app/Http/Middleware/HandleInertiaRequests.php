@@ -37,6 +37,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $guard = $this->getCurrentGuard();
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
         return [
@@ -45,6 +46,7 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
+                'guard' => $guard,
             ],
             'ziggy' => [
                 ...(new Ziggy)->toArray(),
@@ -56,5 +58,21 @@ class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
             ],
         ];
+    }
+
+    private function getCurrentGuard()
+    {
+        $guard = null;
+
+        if (auth('admin')->check()) {
+            $guard = 'admin';
+        } elseif (auth('manager')->check()) {
+            $guard = 'manager';
+        } elseif (auth('receptionist')->check()) {
+            $guard = 'receptionist';
+        } elseif (auth('client')->check()) {
+            $guard = 'client';
+        }
+        return $guard;
     }
 }

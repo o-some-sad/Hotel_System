@@ -130,10 +130,10 @@
   import { 
     Dialog, DialogContent, DialogHeader, DialogTitle, 
     DialogFooter, DialogDescription 
-  } from '@/Components/ui/dialog'
-  import { Button } from '@/Components/ui/button'
-  import { Label } from '@/Components/ui/label'
-  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
+  } from '@/components/ui/dialog'
+  import { Button } from '@/components/ui/button'
+  import { Label } from '@/components/ui/label'
+  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
   import { Loader2 as Loader2Icon } from 'lucide-vue-next'
   import axios from 'axios'
   

@@ -14,7 +14,7 @@
   
   <script setup>
   import { computed } from 'vue'; // This was missing!
-  import { Card, CardHeader, CardContent, CardTitle } from '@/Components/ui/card';
+  import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
   import { Building, Users, Home } from 'lucide-vue-next';
   
   const props = defineProps({
