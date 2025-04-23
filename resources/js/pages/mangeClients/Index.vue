@@ -21,7 +21,6 @@ const props = defineProps({
 const canManageClient = (client) => {
     // Admin can manage any client
     if (props.currentUser.isAdmin) {
-
         return true;
     }
 
@@ -168,11 +167,12 @@ const handlePageChange = (url: string) => {
                                         <line x1="14" y1="11" x2="14" y2="17" />
                                     </svg>
                                 </button>
-                                <!-- Show approve button for unverified clients (admin only) -->
-                                <button v-if="!client.verified_at && currentUser?.isAdmin"
+                                <!-- Show approve button for unverified clients (admin or staff who created the client) -->
+                                <button v-if="!client.verified_at && canManageClient(client)"
                                     @click="approveClient(client.id)"
-                                    class="p-1 border border-green-300 bg-green-50 text-green-700 rounded-md hover:bg-green-100">
-                                    <span class="sr-only">Approve</span>
+                                    class="p-1 border border-green-300 bg-green-50 text-green-700 rounded-md hover:bg-green-100"
+                                    title="Verify client">
+                                    <span class="sr-only">Verify</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
