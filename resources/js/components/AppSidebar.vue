@@ -93,7 +93,7 @@ const getUserDashboardRoute = () => {
           <template #icon>
             <LayoutDashboardIcon class="h-4 w-4" />
           </template>
-          Dashboard
+          Dashboardaaaa
         </SidebarMenuItem>
 
         <SidebarMenuItem
@@ -122,7 +122,7 @@ const getUserDashboardRoute = () => {
         <!-- Add other menu items as needed -->
 
         <!-- User Management - only for admin users -->
-        <SidebarMenuItem
+        <!-- <SidebarMenuItem
           v-if="isAdmin"
           :href="route('admin.users.index')"
           :active="route().current('*.users.index')"
@@ -131,8 +131,8 @@ const getUserDashboardRoute = () => {
                 <BuildingIcon class="h-4 w-4" />
             </template>
             Manage Users
-        </SidebarMenuItem>
-      </SidebarMenu>
+        </SidebarMenuItem> -->
+      </SidebarMenu> 
     </SidebarHeader>
   </Sidebar>
 </template>
