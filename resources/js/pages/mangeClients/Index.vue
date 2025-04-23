@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button';
 import { router } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+
 
 const props = defineProps({
     clients: Object,
@@ -66,6 +68,7 @@ const handlePageChange = (url: string) => {
 <template>
     <div class="container mx-auto py-6 px-4">
         <!-- Flash Messages -->
+        <AuthenticatedLayout>
         <div v-if="$page.props.flash?.success"
             class="mb-4 p-4 bg-green-100 border border-green-200 text-green-800 rounded-md flex items-center justify-between">
             <div class="flex items-center">
@@ -233,6 +236,7 @@ const handlePageChange = (url: string) => {
             Showing {{ clients.meta.from }} to {{ clients.meta.to }} of {{ clients.meta.total }}
             clients
         </div>
+        </AuthenticatedLayout>
     </div>
 </template>
 

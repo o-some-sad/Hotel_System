@@ -22,13 +22,17 @@ class ReservationController extends Controller
             //aport 403
             abort(403, 'Unauthorized action.');
         }
-        $client = Client::find($this->user['id']); // suppose this is the logged-in client
+        
+        $client = Client::find(auth()->guard('client')->user()['id']); // suppose this is the logged-in client
         $reservations = $client->reservations()->with('room')->paginate(10); // get paginated reservations with room data
         // dd($client->room);
         $rooms = Room::where('is_available', 1)->get(); // get all available rooms;
         return Inertia::render('Homepage', [
             'reservations' => $reservations,
             'rooms' => $rooms,
+            'auth' => [
+            'user' => auth()->guard(name: 'client')->user()]
+
         ]);
     }
 

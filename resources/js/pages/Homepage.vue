@@ -1,4 +1,5 @@
 <template>
+  <AuthenticatedLayout>
     <div class="min-h-screen bg-gray-100 p-8">
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-800">Your Reservations</h1>
@@ -191,11 +192,13 @@
         </div>
       </div>
     </div>
+    </AuthenticatedLayout>
   </template>
 
   <script setup>
   import { ref } from 'vue'
-  import { router, useForm } from '@inertiajs/vue3'
+  import { router, useForm , Head } from '@inertiajs/vue3'
+  import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
   const props = defineProps({
     reservations: Object,

@@ -38,6 +38,7 @@ class ManagerController extends Controller
             'managers' => $managers,
             'isAdmin' => $user['role'] === 'admin',
             'id' => $user['role'] === 'manager' ? $user['id'] : null,
+            'user' => auth()->guard('client')->user()
         ]);
     }
     
