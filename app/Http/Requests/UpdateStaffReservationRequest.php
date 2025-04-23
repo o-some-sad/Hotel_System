@@ -7,7 +7,7 @@ use App\Models\Room;
 use App\Models\Reservation;
 
 
-class UpdateStuffReservationRequest extends FormRequest
+class UpdateStaffReservationRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

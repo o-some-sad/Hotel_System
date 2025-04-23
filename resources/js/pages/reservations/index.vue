@@ -27,21 +27,21 @@ const columns = [
 ]
 
 const createReservation = () => {
-    router.visit('/stuff/reservations/create')
+    router.visit('/staff/reservations/create')
 }
 
 const editReservation = (reservationId) => {
-    router.visit(`/stuff/reservations/${reservationId}/edit`)
+    router.visit(`/staff/reservations/${reservationId}/edit`)
 }
 
 const deleteReservation = (reservationId) => {
     if (confirm('Are you sure you want to delete this reservation? This action cannot be undone.')) {
-        router.visit(`/stuff/reservations/${reservationId}/delete`)
+        router.visit(`/staff/reservations/${reservationId}/delete`)
     }
 }
 
 const toggleApproval = (reservation) => {
-    router.patch(`/stuff/reservations/${reservation.id}/approve`, {
+    router.patch(`/staff/reservations/${reservation.id}/approve`, {
         is_approved: !reservation.is_approved
     })
 }
