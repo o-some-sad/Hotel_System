@@ -216,8 +216,8 @@
   <script setup>
   import { ref, computed, onMounted, watch } from 'vue'
   import { usePage, router } from '@inertiajs/vue3'
-  import AppLayout from '@/Layouts/AppLayout.vue'
-  import StatCard from '@/Components/StatCard.vue'
+  import AppLayout from '@/layouts/AppLayout.vue'
+  import StatCard from '@/components/StatCard.vue'
   import CreateBanDialog from './Create.vue'
   import { 
     Plus as PlusIcon, 
@@ -231,11 +231,11 @@
   } from 'lucide-vue-next'
   
   // UI Component imports
-  import { Button } from '@/Components/ui/button'
-  import { Input } from '@/Components/ui/input'
-  import { Badge } from '@/Components/ui/badge'
-  import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/Components/ui/table'
-  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
+  import { Button } from '@/components/ui/button'
+  import { Input } from '@/components/ui/input'
+  import { Badge } from '@/components/ui/badge'
+  import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
   
   const props = defineProps({
     bans: Object,

@@ -80,16 +80,6 @@ const submit = () => {
             <p v-if="form.errors.password" class="mt-1 text-sm text-red-500">{{ form.errors.password }}</p>
           </div>
 
-          <div class="flex items-center space-x-2">
-            <input
-              id="remember"
-              type="checkbox"
-              v-model="form.remember"
-              class="rounded border-gray-300 text-blue-600 shadow-sm"
-            />
-            <label for="remember" class="text-sm text-gray-600">Remember me</label>
-          </div>
-
           <button
             type="submit"
             :disabled="form.processing"

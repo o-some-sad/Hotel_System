@@ -207,9 +207,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/Components/ui/table'
-import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/Components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 // Get auth info directly from Inertia
 const page = usePage();

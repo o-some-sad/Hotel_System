@@ -61,7 +61,7 @@
   
   <script setup>
   import { computed } from 'vue';
-  import { Button } from '@/Components/ui/button';
+  import { Button } from '@/components/ui/button';
   import { 
     ChevronLeft as ChevronLeftIcon, 
     ChevronRight as ChevronRightIcon,

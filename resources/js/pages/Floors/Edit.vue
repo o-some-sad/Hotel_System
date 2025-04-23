@@ -68,13 +68,13 @@ import { useForm } from '@inertiajs/vue3'
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle, 
   DialogFooter, DialogDescription 
-} from '@/Components/ui/dialog'
-import { Button } from '@/Components/ui/button'
-import { Label } from '@/Components/ui/label'
-import { Input } from '@/Components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { InfoIcon } from 'lucide-vue-next'
-import InputError from '@/Components/InputError.vue'
+import InputError from '@/components/InputError.vue'
 
 const props = defineProps({
   show: {
