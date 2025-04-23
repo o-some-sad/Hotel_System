@@ -184,6 +184,15 @@ onMounted(() => {
           <span class="font-medium">Manage Floors</span>
         </SidebarMenuItem>
         
+        <SidebarMenuItem
+          :href="route('managers.index')"
+        >
+          <template #icon>
+            <BuildingIcon class="h-4 w-4" />
+          </template>
+          Manage Managers
+        </SidebarMenuItem>
+
         <!-- Rooms Management -->
         <SidebarMenuItem
           :href="isAdmin ? route('admin.rooms.index') : (isManager ? route('manager.rooms.index') : '#')"

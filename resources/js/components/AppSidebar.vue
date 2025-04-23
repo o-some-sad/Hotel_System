@@ -34,8 +34,7 @@ const footerNavItems: NavItem[] = [
 const page = usePage();
 const isAdmin = computed(() => {
   // Check user type based on your auth structure
-  return page.props.auth?.user?.guard === 'admin' || 
-         page.props.auth?.guard === 'admin';
+  return page.props.auth?.guard === 'admin';
 });
 
 import { 
@@ -61,9 +60,9 @@ const props = defineProps({
 });
 
 // Determine user type
-const isManager = computed(() => page.props.auth?.user?.guard === 'manager');
-const isReceptionist = computed(() => page.props.auth?.user?.guard === 'receptionist');
-const isClient = computed(() => page.props.auth?.user?.guard === 'client');
+const isManager = computed(() => page.props.auth?.guard === 'manager');
+const isReceptionist = computed(() => page.props.auth?.guard === 'receptionist');
+const isClient = computed(() => page.props.auth?.guard === 'client');
 
 // Function to get the correct dashboard route based on user type
 const getUserDashboardRoute = () => {
@@ -94,7 +93,16 @@ const getUserDashboardRoute = () => {
           <template #icon>
             <LayoutDashboardIcon class="h-4 w-4" />
           </template>
-          Dashboard
+          Dashboardaaaa
+        </SidebarMenuItem>
+
+        <SidebarMenuItem
+          :href="route('managers.index')"
+        >
+          <template #icon>
+            <BuildingIcon class="h-4 w-4" />
+          </template>
+          Manage Managers
         </SidebarMenuItem>
 
         <!-- Floors Management - only for admin and manager users -->
@@ -108,11 +116,13 @@ const getUserDashboardRoute = () => {
           </template>
           Manage Floors
         </SidebarMenuItem>
+
+
         
         <!-- Add other menu items as needed -->
 
         <!-- User Management - only for admin users -->
-        <SidebarMenuItem
+        <!-- <SidebarMenuItem
           v-if="isAdmin"
           :href="route('admin.users.index')"
           :active="route().current('*.users.index')"
@@ -121,8 +131,8 @@ const getUserDashboardRoute = () => {
                 <BuildingIcon class="h-4 w-4" />
             </template>
             Manage Users
-        </SidebarMenuItem>
-      </SidebarMenu>
+        </SidebarMenuItem> -->
+      </SidebarMenu> 
     </SidebarHeader>
   </Sidebar>
 </template>
