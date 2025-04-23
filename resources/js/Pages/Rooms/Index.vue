@@ -1,6 +1,15 @@
 <template>
     <AppLayout :title="'Manage Rooms'" :breadcrumbs="breadcrumbs">
       <div class="container py-6">
+        <!-- Flash Messages -->
+        <div v-if="$page.props.flash.success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {{ $page.props.flash.success }}
+        </div>
+
+        <div v-if="$page.props.flash.error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {{ $page.props.flash.error }}
+        </div>
+
         <!-- Header with title and add button -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>

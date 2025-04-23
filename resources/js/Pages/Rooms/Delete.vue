@@ -72,30 +72,17 @@
   const deleteRoom = () => {
     if (!props.room || isDisabled.value) return;
     
-    // Use correct route based on authentication
     const routeName = isAdmin.value ? 'admin.rooms.destroy' : 'manager.rooms.destroy';
     
-    // Use form-based delete instead of direct router.delete 
     router.delete(route(routeName, props.room.id), {
       preserveScroll: true,
-      onBefore: () => {
-        console.log("Deleting room:", props.room.id, "using route:", routeName);
-        return true;
-      },
+      preserveState: false, // This ensures page refreshes with new data and flash messages
       onSuccess: () => {
-        console.log("Room deleted successfully");
+        // Just close the dialog - the flash message will be handled by the layout
         emit('update:show', false);
-        emit('deleted');
       },
       onError: (errors) => {
-        console.error('Delete error:', errors);
-        
-        if (errors.status === 419 || errors.status === 401) {
-          alert('Your session has expired. Please refresh the page and try again.');
-          window.location.reload();
-        } else {
-          alert(`Failed to delete room: ${errors.message || 'Unknown error'}`);
-        }
+        console.error('Error deleting room:', errors);
       }
     });
   };

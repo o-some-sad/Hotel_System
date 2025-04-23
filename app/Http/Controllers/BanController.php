@@ -117,9 +117,6 @@ class BanController extends Controller
         return redirect()->route($routeName)->with('success', 'Ban revoked successfully');
     }
     
-    /**
-     * Get managers for ban creation
-     */
     public function getManagers(): JsonResponse
     {
         $managers = Manager::select('id', 'name', 'email')->get();
@@ -129,9 +126,6 @@ class BanController extends Controller
         ]);
     }
     
-    /**
-     * Get clients for ban creation
-     */
     public function getClients(): JsonResponse
     {
         $clients = Client::select('id', 'name', 'email')->get();
@@ -141,9 +135,6 @@ class BanController extends Controller
         ]);
     }
     
-    /**
-     * Get receptionists for ban creation
-     */
     public function getReceptionists(): JsonResponse
     {
         $receptionists = Receptionist::select('id', 'name', 'email')->get();

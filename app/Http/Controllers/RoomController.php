@@ -226,26 +226,22 @@ class RoomController extends Controller
 }
     
     public function destroy(Room $room)
-    {
-        try {
-            // Check if room has reservations
-            if ($room->reservations()->count() > 0) {
-                return response()->json([
-                    'error' => 'Cannot delete a room with reservations.'
-                ], 422);
-            }
-            
-            $room->delete();
-            
-            return response()->json(['success' => true]);
-        } catch (\Exception $e) {
-            Log::error('Room delete error: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'Failed to delete room',
-                'details' => app()->environment('local') ? $e->getMessage() : null
-            ], 500);
+{
+    try {
+        // Check if room has reservations
+        if ($room->reservations()->count() > 0) {
+            return redirect()->back()->with('error', 'Cannot delete a room with reservations.');
         }
+        
+        $room->delete();
+        
+        // This is the line that matters - redirect with flash message
+        return redirect()->back()->with('success', 'Room deleted successfully');
+    } catch (\Exception $e) {
+        Log::error('Room delete error: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Failed to delete room: ' . $e->getMessage());
     }
+}
     
     public function getManagers()
     {

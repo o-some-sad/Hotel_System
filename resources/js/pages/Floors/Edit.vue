@@ -21,25 +21,12 @@
             <InputError :message="form.errors.name" />
           </div>
           
-          <div class="grid gap-2">
-            <Label for="number">Floor Number</Label>
-            <Input 
-              id="number" 
-              :value="floor.number" 
-              disabled
-              class="bg-muted"
-            />
-            <p class="text-xs text-muted-foreground">Floor numbers cannot be changed once assigned.</p>
-          </div>
-          
-          <div v-if="isAdmin" class="grid gap-2">
-            <Label for="edit-manager">Reassign Manager</Label>
+          <div v-if="isAdmin && managers && managers.length > 0" class="grid gap-2">
+            <Label for="manager">Assign Manager</Label>
             <Select v-model="form.manager_id">
-              <template #trigger>
-                <SelectTrigger id="edit-manager">
-                  <SelectValue placeholder="Select a manager" />
-                </SelectTrigger>
-              </template>
+              <SelectTrigger id="manager" class="w-full">
+                <SelectValue placeholder="Select a manager" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem :value="null">Assign to me</SelectItem>
                 <SelectItem 
@@ -106,13 +93,22 @@ const form = useForm({
   manager_id: null
 })
 
-// Watch for floor changes to update form
+// Watch for floor changes to update form - fix the manager_id initialization
 watch(() => props.floor, (newFloor) => {
   if (newFloor) {
-    form.name = newFloor.name
-    form.manager_id = newFloor.created_by_id
+    form.name = newFloor.name;
+    
+    // Only set manager_id if created by a manager
+    if (newFloor.created_by_type === 'App\\Models\\Manager') {
+      form.manager_id = newFloor.created_by_id;
+    } else {
+      // If created by admin, default to null (Assign to me option)
+      form.manager_id = null;
+    }
+    
+    console.log('Form initialized with floor data:', form.data());
   }
-}, { immediate: true })
+}, { immediate: true });
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -124,16 +120,24 @@ const formatDate = (dateString) => {
   });
 };
 
+// Update submit form to handle successful update better
 const submitForm = () => {
-  if (!props.floor) return
+  if (!props.floor) return;
   
-  const routeName = props.isAdmin ? 'admin.floors.update' : 'manager.floors.update'
+  const routeName = props.isAdmin ? 'admin.floors.update' : 'manager.floors.update';
+  
+  console.log('Submitting floor update:', form.data());
   
   form.patch(route(routeName, props.floor.id), {
+    preserveScroll: true,
     onSuccess: () => {
-      emit('update:show', false)
-      emit('updated')
+      console.log('Floor updated successfully');
+      emit('update:show', false);
+      emit('updated');
+    },
+    onError: (errors) => {
+      console.error('Update errors:', errors);
     }
-  })
-}
+  });
+};
 </script>
