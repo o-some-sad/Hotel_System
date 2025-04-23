@@ -29,6 +29,7 @@ class Client extends Authenticatable implements MustVerifyEmail
         'country',
         'gender',
         'image',
+        'created_by_id',
         'created_by_type',
         'email_verified_at',
         'verified_at',

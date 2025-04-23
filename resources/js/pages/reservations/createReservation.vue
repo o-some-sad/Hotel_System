@@ -94,7 +94,7 @@ const handleRoomChange = (roomId) => {
 };
 
 const onSubmit = () => {
-    form.post('/stuff/reservations', {
+    form.post('/staff/reservations', {
         onSuccess: () => {
             form.reset();
         }
@@ -102,7 +102,7 @@ const onSubmit = () => {
 }
 
 const cancel = () => {
-    router.visit('/stuff/reservations');
+    router.visit('/staff/reservations');
 }
 </script>
 

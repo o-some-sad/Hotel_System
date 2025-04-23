@@ -7,14 +7,14 @@ use Inertia\Inertia;
 use App\Models\Client;
 use App\Models\Reservation;
 use App\Models\Room;
-use App\Http\Requests\stuffReservationRequest;
-use App\Http\Requests\UpdateStuffReservationRequest;
+use App\Http\Requests\staffReservationRequest;
+use App\Http\Requests\UpdateStaffReservationRequest;
 use App\Notifications\ReservationApproved;
 use Illuminate\Auth\Events\Validated;
 
-class ReservationStuffController extends Controller
+class ReservationStaffController extends Controller
 {
-    //Show all reservation to the stuff
+    //Show all reservation to the staff
     public function index()
     {
         [$user, $userType] = $this->getAuthenticatedUser();
@@ -40,7 +40,7 @@ class ReservationStuffController extends Controller
         ]);
     }
 
-    public function store(stuffReservationRequest $request) // create reservation
+    public function store(staffReservationRequest $request) // create reservation
     {
         $validated = $request->validated();
 
@@ -57,7 +57,7 @@ class ReservationStuffController extends Controller
         [$user, $userType] = $this->getAuthenticatedUser();
 
 
-        #TODOHandle who created the reservation later
+
         $data = array_merge($validated, [
             'created_by_id' => $user ? $user->id : null,
             'created_by_type' => $userType,
@@ -72,7 +72,7 @@ class ReservationStuffController extends Controller
         $room->is_available = false;
         $room->save();
 
-        return redirect()->route('stuff.reservation.index')->with('success', 'Reservation created successfully');
+        return redirect()->route('staff.reservation.index')->with('success', 'Reservation created successfully');
     }
 
     public function edit($reservationId)
@@ -80,11 +80,11 @@ class ReservationStuffController extends Controller
         $reservation = Reservation::with(['client', 'room'])->findOrFail($reservationId);
 
         [$user, $userType] = $this->getAuthenticatedUser();
-        if ($userType !== 'App\Models\Admin' && $reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType) {
-            return redirect()->route('stuff.reservation.index')->with('error', 'Your are not authorized to update this reservation');
+        if ($userType !== 'App\Models\Admin' && ($reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType)) {
+            return redirect()->route('staff.reservation.index')->with('error', 'You are not authorized to update this reservation');
         }
 
-        //return the valid rooms to the stuff and room in used too
+        //return the valid rooms to the staff and room in used too
         $rooms = Room::where('is_available', true)
             ->orWhere('id', $reservation->room_id)
             ->get();
@@ -92,7 +92,7 @@ class ReservationStuffController extends Controller
         return Inertia::render('reservations/updateReservation', ['reservation' => $reservation, 'rooms' => $rooms]);
     }
 
-    public function update($reservationId, UpdateStuffReservationRequest $request) // update reservation
+    public function update($reservationId, UpdateStaffReservationRequest $request) // update reservation
     {
         $validated = $request->validated();
 
@@ -127,7 +127,7 @@ class ReservationStuffController extends Controller
         $reservation->update($data);
 
 
-        return redirect()->route('stuff.reservation.index')->with('success', 'Reservation updated successfully');
+        return redirect()->route('staff.reservation.index')->with('success', 'Reservation updated successfully');
     }
 
 
@@ -135,9 +135,11 @@ class ReservationStuffController extends Controller
     public function delete($reservationId)
     {
         $reservation = Reservation::with(['client', 'room'])->findOrFail($reservationId);
+
         [$user, $userType] = $this->getAuthenticatedUser();
-        if ($userType !== 'App\Models\Admin' && $reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType) {
-            return redirect()->route('stuff.reservation.index')->with('error', 'Your are not authorized to update this reservation');
+
+        if ($userType !== 'App\Models\Admin' && ($reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType)) {
+            return redirect()->route('staff.reservation.index')->with('error', 'You are not authorized to update this reservation');
         }
 
         return Inertia::render('reservations/deleteReservation', [
@@ -149,6 +151,12 @@ class ReservationStuffController extends Controller
     {
         $reservation = Reservation::findOrFail($reservationId);
 
+        [$user, $userType] = $this->getAuthenticatedUser();
+
+        if ($userType !== 'App\Models\Admin' && ($reservation->created_by_id !== $user->id || $reservation->created_by_type !== $userType)) {
+            return redirect()->route('staff.reservation.index')->with('error', 'You are not authorized to update this reservation');
+        }
+
         $room = Room::find($reservation->room_id);
         if ($room) {
             $room->is_available = true;
@@ -156,7 +164,7 @@ class ReservationStuffController extends Controller
         }
         $reservation->delete();
 
-        return to_route('stuff.reservation.index')->with('success', 'Reservation deleted successfully');
+        return to_route('staff.reservation.index')->with('success', 'Reservation deleted successfully');
     }
 
     public function approveReservation($reservationId)
@@ -168,7 +176,7 @@ class ReservationStuffController extends Controller
         //send notification to client
         $reservation->client->notify(new ReservationApproved($reservation));
 
-        return to_route('stuff.reservation.index')->with('success', 'Reservation approved successfully');
+        return to_route('staff.reservation.index')->with('success', 'Reservation approved successfully');
     }
 
     private function getAuthenticatedUser()

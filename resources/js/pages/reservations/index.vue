@@ -11,6 +11,8 @@ import {
 // Remove Badge import and replace with direct styling
 import { Button } from '@/components/ui/button'
 import { router } from '@inertiajs/vue3'
+import { onMounted, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 const columns = [
     { id: "id", label: "ID" },
@@ -25,21 +27,21 @@ const columns = [
 ]
 
 const createReservation = () => {
-    router.visit('/stuff/reservations/create')
+    router.visit('/staff/reservations/create')
 }
 
 const editReservation = (reservationId) => {
-    router.visit(`/stuff/reservations/${reservationId}/edit`)
+    router.visit(`/staff/reservations/${reservationId}/edit`)
 }
 
 const deleteReservation = (reservationId) => {
     if (confirm('Are you sure you want to delete this reservation? This action cannot be undone.')) {
-        router.visit(`/stuff/reservations/${reservationId}/delete`)
+        router.visit(`/staff/reservations/${reservationId}/delete`)
     }
 }
 
 const toggleApproval = (reservation) => {
-    router.patch(`/stuff/reservations/${reservation.id}/approve`, {
+    router.patch(`/staff/reservations/${reservation.id}/approve`, {
         is_approved: !reservation.is_approved
     })
 }
@@ -52,18 +54,88 @@ const formatPrice = (price) => {
     }).format(price)
 }
 
+// In your Vue component script
+const props = defineProps({
+    reservations: Object,
+    currentUser: Object
+});
 
-defineProps({
-    reservations: Object
-})
+const canEditReservation = (reservation) => {
+    return props.currentUser.isAdmin ||
+        (reservation.created_by_id === props.currentUser.id &&
+            reservation.created_by_type === props.currentUser.type);
+};
+
+const canDeleteReservation = (reservation) => {
+    return props.currentUser.isAdmin ||
+        (reservation.created_by_id === props.currentUser.id &&
+            reservation.created_by_type === props.currentUser.type);
+};
 
 const handlePageChange = (url) => {
     router.visit(url)
 }
+
+// Add these for flash message handling
+const page = usePage();
+
+// Auto-dismiss flash messages after 5 seconds
+watch(() => page.props.flash, (flash) => {
+    if (flash?.success) {
+        setTimeout(() => {
+            page.props.flash.success = null;
+        }, 5000);
+    }
+
+    if (flash?.error) {
+        setTimeout(() => {
+            page.props.flash.error = null;
+        }, 5000);
+    }
+}, { deep: true, immediate: true });
 </script>
 
 <template>
     <div class="container mx-auto py-6 px-4">
+        <!-- Flash Messages -->
+        <div v-if="$page.props.flash?.success"
+            class="mb-6 p-4 bg-green-100 border border-green-200 text-green-800 rounded-md flex items-center justify-between">
+            <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd" />
+                </svg>
+                <span>{{ $page.props.flash.success }}</span>
+            </div>
+            <button @click="$page.props.flash.success = null" class="text-green-700 hover:text-green-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+
+        <div v-if="$page.props.flash?.error"
+            class="mb-6 p-4 bg-red-100 border border-red-200 text-red-800 rounded-md flex items-center justify-between">
+            <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clip-rule="evenodd" />
+                </svg>
+                <span>{{ $page.props.flash.error }}</span>
+            </div>
+            <button @click="$page.props.flash.error = null" class="text-red-700 hover:text-red-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">Reservation Management</h1>
             <button @click="createReservation" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
@@ -133,29 +205,34 @@ const handlePageChange = (url) => {
                                 </template>
 
                                 <!-- Edit and delete buttons visible for all reservations -->
-                                <button @click="editReservation(reservation.id)"
-                                    class="p-1 border border-gray-300 rounded-md hover:bg-gray-100">
-                                    <span class="sr-only">Edit</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                                        <path d="m15 5 4 4" />
-                                    </svg>
-                                </button>
-                                <button @click="deleteReservation(reservation.id)"
-                                    class="p-1 border border-red-300 bg-red-50 text-red-700 rounded-md hover:bg-red-100">
-                                    <span class="sr-only">Delete</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M3 6h18" />
-                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                        <line x1="10" x2="10" y1="11" y2="17" />
-                                        <line x1="14" x2="14" y1="11" y2="17" />
-                                    </svg>
-                                </button>
+                                <template v-if="canEditReservation(reservation)">
+                                    <button @click="editReservation(reservation.id)"
+                                        class="p-1 border border-gray-300 rounded-md hover:bg-gray-100">
+                                        <span class="sr-only">Edit</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                            <path d="m15 5 4 4" />
+                                        </svg>
+                                    </button>
+                                </template>
+
+                                <template v-if="canDeleteReservation(reservation)">
+                                    <button @click="deleteReservation(reservation.id)"
+                                        class="p-1 border border-red-300 bg-red-50 text-red-700 rounded-md hover:bg-red-100">
+                                        <span class="sr-only">Delete</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 6h18" />
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                            <line x1="10" y1="11" x2="10" y2="17" />
+                                            <line x1="14" y1="11" x2="14" y2="17" />
+                                        </svg>
+                                    </button>
+                                </template>
                             </div>
                         </TableCell>
                     </TableRow>

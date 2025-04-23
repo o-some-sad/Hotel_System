@@ -27,9 +27,16 @@ class ClientRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', Rule::unique('clients', 'email')->ignore($clientId),],
-            'password' => [$this->route('client') ? 'nullable' : 'required', 'string', 'min:8'],
-            'nationalId' => ['required', 'string', 'size:10', Rule::unique('clients', 'nationalId')->ignore($clientId),],
+            'email' => ['required', 'email', Rule::unique('clients', 'email')->ignore($clientId), function ($attribute, $value, $fail) {
+                $restrictedDomains = ['@manager', '@receptionist', '@admin'];
+                foreach ($restrictedDomains as $domain) {
+                    if (str_contains($value, $domain)) {
+                        $fail('This email domain is reserved for a staff used');
+                    }
+                }
+            }],
+            'password' => [$this->route('client') ? 'nullable' : 'required', 'string', 'min:6'],
+            'nationalId' => ['required', 'string', 'size:14', Rule::unique('clients', 'nationalId')->ignore($clientId),],
             'country' => ['required', 'string', 'regex:/^[A-Za-z\s]+$/', 'exists:lc_countries_translations,name'],
             'gender' => ['required'],
             'image' => ['nullable', 'image', 'mimes:jpeg,jpg,gif,svg,webp', 'max:1024']
@@ -44,9 +51,9 @@ class ClientRequest extends FormRequest
             'email.email' => 'Invalid email format please enter valid one',
             'email.unique' => 'This email is already taken',
             'password.required' => 'Password is required',
-            'password.min' => 'Password must be at least 8 character',
+            'password.min' => 'Password must be at least 6 character',
             'nationalId.required' => 'National ID is required',
-            'nationalId.size' => 'National ID should be 10 numbers',
+            'nationalId.size' => 'National ID should be 14 numbers',
             'nationalId.unique' => 'This national ID already taken',
             'country.required' => 'Country is required',
             'country.exists' => 'Invalid country please enter valid one',

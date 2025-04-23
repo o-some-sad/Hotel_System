@@ -16,9 +16,17 @@ class ClientController extends Controller
 
     public function index()
     {
+        [$user, $userType] = $this->getAuthenticatedUser();
+
         $clients = Client::paginate(10);
+
         return Inertia::render('mangeClients/Index', [
-            'clients' => $clients
+            'clients' => $clients,
+            'currentUser' => [
+                'id' => $user->id,
+                'type' => $userType,
+                'isAdmin' => $userType ===  'App\Models\Admin'
+            ]
         ]);
     }
 
@@ -40,7 +48,16 @@ class ClientController extends Controller
             // No image uploaded, set image to null in database
             $validatedRequest['image'] = null;
         }
-        Client::create($validatedRequest);
+
+        [$user, $userType] = $this->getAuthenticatedUser();
+
+        $data = array_merge($validatedRequest, [
+            'created_by_id' => $user ? $user->id : null,
+            'created_by_type' => $userType,
+            'verified_at' => now(),
+        ]);
+
+        Client::create($data);
 
         return redirect()->route('clients.index')->with('message', 'Client created successfully');
     }
@@ -49,6 +66,10 @@ class ClientController extends Controller
     public function edit($clientId)
     {
         $client = Client::findOrFail($clientId);
+        [$user, $userType] = $this->getAuthenticatedUser();
+        if ($userType !== 'App\Models\Admin' && ($client->created_by_id !== $user->id || $client->created_by_type !== $userType)) {
+            return redirect()->route('staff.reservation.index')->with('error', 'You are not authorized to update this reservation');
+        }
 
         return Inertia::render('mangeClients/updateClient', [
             'client' => $client
@@ -66,7 +87,7 @@ class ClientController extends Controller
         } else {
             unset($validatedRequest['password']);
         }
-        if ($validatedRequest->hasFile('image')) {
+        if ($request->hasFile('image')) {
             if ($client->image) {
                 Storage::disk('public')->delete($client->image);
             }
@@ -84,6 +105,10 @@ class ClientController extends Controller
     public function delete($clientId)
     {
         $client = Client::findOrFail($clientId);
+        [$user, $userType] = $this->getAuthenticatedUser();
+        if ($userType !== 'App\Models\Admin' && ($client->created_by_id !== $user->id || $client->created_by_type !== $userType)) {
+            return redirect()->route('staff.reservation.index')->with('error', 'You are not authorized to update this reservation');
+        }
 
         return Inertia::render('mangeClients/deleteClient', [
             'client' => $client
@@ -97,6 +122,10 @@ class ClientController extends Controller
 
         if ($client->image && Storage::disk('public')->exists($client->image)) {
             Storage::disk('public')->delete($client->image);
+        }
+        [$user, $userType] = $this->getAuthenticatedUser();
+        if ($userType !== 'App\Models\Admin' && ($client->created_by_id !== $user->id || $client->created_by_type !== $userType)) {
+            return redirect()->route('staff.reservation.index')->with('error', 'You are not authorized to update this reservation');
         }
 
         $client->delete();
@@ -120,9 +149,9 @@ class ClientController extends Controller
 
         return redirect()->route('clients.index')
             ->with('info', 'Client is already approved.');
-    //To help stuff get the client when reservation
-}
-public function search(Request $request)
+        //To help staff get the client when reservation
+    }
+    public function search(Request $request)
     {
         $query = $request->input('query');
         $clients = Client::where('name', 'like', "%{$query}%")
@@ -131,5 +160,25 @@ public function search(Request $request)
             ->get(['id', 'name', 'email', 'image']);
 
         return response()->json($clients);
+    }
+
+    private function getAuthenticatedUser()
+    {
+        //Detect the authenticated user
+        $user = null;
+        $userType = null;
+
+        if (auth()->guard('receptionist')->check()) {
+            $user = auth()->guard('receptionist')->user();
+            $userType = 'App\Models\Receptionist';
+        } else if (auth()->guard('manager')->check()) {
+            $user = auth()->guard('manager')->user();
+            $userType = 'App\Models\Manager';
+        } else if (auth()->guard('admin')->check()) {
+            $user = auth()->guard('admin')->user();
+            $userType = 'App\Models\Admin';
+        }
+
+        return [$user, $userType];
     }
 }
