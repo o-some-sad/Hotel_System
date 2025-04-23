@@ -1,4 +1,3 @@
-<!-- filepath: e:\ITI\Projects\Laravel\Hotel_System\resources\js\pages\Floors\DeleteConfirmationDialog.vue -->
 <template>
   <Dialog :open="show" @update:open="$emit('update:show', $event)">
     <DialogContent class="sm:max-w-[425px]">
@@ -41,13 +40,13 @@
 
 <script setup>
 import { computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle, 
   DialogFooter, DialogDescription 
 } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
-import { AlertTriangleIcon } from 'lucide-vue-next';
+import { AlertTriangle as AlertTriangleIcon } from 'lucide-vue-next';
 
 const props = defineProps({
   show: {
@@ -66,22 +65,29 @@ const isDisabled = computed(() => {
   return props.floor.rooms_count > 0;
 });
 
+// Get current auth guard
+const page = usePage();
+const isAdmin = computed(() => 
+  page.props.auth?.guard === 'admin' || 
+  page.props.isAdmin === true
+);
+
 // Delete the floor using Inertia instead of axios
 const deleteFloor = () => {
   if (!props.floor || isDisabled.value) return;
   
-  // Use Inertia.delete with a proper route
+  // Use Inertia.delete with preserveState: false to allow page refresh
   router.delete(route(
-    // Choose the right route based on floor creator type
-    props.floor.created_by_type.includes('Admin') 
+    isAdmin.value 
       ? 'admin.floors.destroy' 
       : 'manager.floors.destroy', 
     props.floor.id
   ), {
     preserveScroll: true,
+    preserveState: false,  // Allow the page to refresh with new data and flash messages
     onSuccess: () => {
+      // Just close the dialog - the flash message will be handled by the layout
       emit('update:show', false);
-      emit('deleted');
     },
     onError: (errors) => {
       console.error('Error deleting floor:', errors);

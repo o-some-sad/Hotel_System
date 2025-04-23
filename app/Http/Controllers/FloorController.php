@@ -166,15 +166,26 @@ public function store(Request $request)
 
     public function update(Request $request, Floor $floor)
     {
+        $isAdmin = Auth::guard('admin')->check();
+    
         $validated = $request->validate([
             'name' => 'required|string|min:3|max:255',
-            'manager_id' => 'nullable|exists:managers,id', // Changed from users,id to managers,id
+            'manager_id' => $isAdmin ? 'nullable|exists:managers,id' : 'nullable',
         ]);
         
         try {
-            if (Auth::guard('admin')->check() && isset($validated['manager_id'])) {
-                $floor->created_by_id = $validated['manager_id'];
-                $floor->created_by_type = 'App\\Models\\Manager'; // Set correct type
+            if ($isAdmin) {
+                // If manager_id is null or not set, assign to the admin
+                if (!isset($validated['manager_id']) || $validated['manager_id'] === null) {
+                    $floor->created_by_id = Auth::guard('admin')->id();
+                    $floor->created_by_type = 'App\\Models\\Admin';
+                    Log::info('Floor reassigned to admin: ' . $floor->created_by_id);
+                } else {
+                    // Assign to specified manager
+                    $floor->created_by_id = $validated['manager_id'];
+                    $floor->created_by_type = 'App\\Models\\Manager';
+                    Log::info('Floor reassigned to manager: ' . $floor->created_by_id);
+                }
             }
             
             $floor->name = $validated['name'];
@@ -189,17 +200,14 @@ public function store(Request $request)
     
     public function destroy(Floor $floor)
     {
-        
         // Check if floor has rooms
         if ($floor->rooms()->count() > 0) {
-            return response()->json([
-                'error' => 'Cannot delete a floor with rooms.'
-            ], 422);
+            return redirect()->back()->with('error', 'Cannot delete a floor with rooms.');
         }
         
         $floor->delete();
         
-        return response()->json(['success' => true]);
+        return redirect()->back()->with('success', 'Floor deleted successfully');
     }
     
     public function getManagers()
@@ -230,7 +238,7 @@ public function store(Request $request)
         if (!$highestFloor) {
             return 'F0001'; // At least 4 digits
         }
-        // Extract the numeric part and increment
+
         $number = intval(substr($highestFloor, 1)) + 1;
         return 'F' . str_pad($number, 4, '0', STR_PAD_LEFT); // Ensuring 4 digits
     }
