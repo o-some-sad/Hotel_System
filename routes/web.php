@@ -6,11 +6,12 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReservationStaffController;
-use App\Http\Controllers\EmailVerificationPromptController;
-use App\Http\Controllers\VerifyEmailController;
-use App\Http\Controllers\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\FloorController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\BanController;
 use App\Http\Controllers\ManagerController;
 use App\Http\Controllers\ReceptionistController;
 use App\Http\Controllers\StripeCheckoutController;
@@ -19,7 +20,9 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+// Admin routes
 Route::middleware(['auth:admin'])->group(function () {
+    // Admin Dashboard
     Route::get('/admin/dashboard', function () {
         return Inertia::render('Admin/Dashboard', [
             'auth' => [
@@ -29,20 +32,47 @@ Route::middleware(['auth:admin'])->group(function () {
     })->name('admin.dashboard');
 
     // Admin Floor Routes
-    Route::get('/admin/floors', [FloorController::class, 'index'])->name('admin.floors.index');
-    Route::post('/admin/floors', [FloorController::class, 'store'])->name('admin.floors.store');
-    Route::patch('/admin/floors/{floor}', [FloorController::class, 'update'])->name('admin.floors.update');
-    Route::delete('/admin/floors/{floor}', [FloorController::class, 'destroy'])->name('admin.floors.destroy');
-    Route::get('/admin/managers', [FloorController::class, 'getManagers'])->name('admin.managers.index');
-
-    // Admin Room Routes
-    /*Route::get('/admin/rooms', [RoomController::class, 'index'])->name('admin.rooms.index');
-    Route::post('/admin/rooms', [RoomController::class, 'store'])->name('admin.rooms.store');
-    Route::patch('/admin/rooms/{room}', [RoomController::class, 'update'])->name('admin.rooms.update');
-    Route::delete('/admin/rooms/{room}', [RoomController::class, 'destroy'])->name('admin.rooms.destroy');*/
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/floors', [FloorController::class, 'index'])->name('floors.index');
+        Route::post('/floors', [FloorController::class, 'store'])->name('floors.store');
+        Route::patch('/floors/{floor}', [FloorController::class, 'update'])->name('floors.update');
+        Route::delete('/floors/{floor}', [FloorController::class, 'destroy'])->name('floors.destroy');
+        
+        // Admin Room Routes
+        Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
+        Route::post('/rooms', [RoomController::class, 'store'])->name('rooms.store');
+        Route::patch('/rooms/{room}', [RoomController::class, 'update'])->name('rooms.update');
+        Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])->name('rooms.destroy');
+        
+        // Admin Ban Routes
+        Route::get('/bans', [BanController::class, 'index'])->name('bans.index');
+        Route::get('/bans/create', [BanController::class, 'create'])->name('bans.create');
+        Route::post('/bans', [BanController::class, 'store'])->name('bans.store');
+        Route::delete('/bans/{ban}', [BanController::class, 'revoke'])->name('bans.revoke');
+        
+        // User Selection Routes for Admin
+        Route::get('/managers', [BanController::class, 'getManagers'])->name('managers.index');
+        Route::get('/clients', [BanController::class, 'getClients'])->name('clients.index');
+        Route::get('/receptionists', [BanController::class, 'getReceptionists'])->name('receptionists.index');
+    });
 });
 
-Route::middleware(['auth:manager'])->group(function () {
+// Ban notice page
+Route::get('/banned', function () {
+    if (!session('ban_message')) {
+        return redirect('/login');
+    }
+    
+    return Inertia::render('auth/Banned', [
+        'banMessage' => session('ban_message'),
+        'redirectAfter' => session('redirect_after', 10),
+        'redirectTo' => session('redirect_to', '/login')
+    ]);
+})->name('banned');
+
+// Manager routes
+Route::middleware(['auth:manager', 'ban.check'])->group( function () {
+    // Manager Dashboard
     Route::get('/manager/dashboard', function () {
         return Inertia::render('Manager/Dashboard', [
             'auth' => [
@@ -51,20 +81,34 @@ Route::middleware(['auth:manager'])->group(function () {
         ]);
     })->name('manager.dashboard');
 
-    // Manager Floor Routes
-    Route::get('/manager/floors', [FloorController::class, 'index'])->name('manager.floors.index');
-    Route::post('/manager/floors', [FloorController::class, 'store'])->name('manager.floors.store');
-    Route::patch('/manager/floors/{floor}', [FloorController::class, 'update'])->name('manager.floors.update');
-    Route::delete('/manager/floors/{floor}', [FloorController::class, 'destroy'])->name('manager.floors.destroy');
-
-    // Manager Room Routes
-    /*Route::get('/manager/rooms', [RoomController::class, 'index'])->name('manager.rooms.index');
-    Route::post('/manager/rooms', [RoomController::class, 'store'])->name('manager.rooms.store');
-    Route::patch('/manager/rooms/{room}', [RoomController::class, 'update'])->name('manager.rooms.update');
-    Route::delete('/manager/rooms/{room}', [RoomController::class, 'destroy'])->name('manager.rooms.destroy');*/
+    // Manager Routes
+    Route::prefix('manager')->name('manager.')->group(function () {
+        // Manager Floor Routes
+        Route::get('/floors', [FloorController::class, 'index'])->name('floors.index');
+        Route::post('/floors', [FloorController::class, 'store'])->name('floors.store');
+        Route::patch('/floors/{floor}', [FloorController::class, 'update'])->name('floors.update');
+        Route::delete('/floors/{floor}', [FloorController::class, 'destroy'])->name('floors.destroy');
+    
+        // Manager Room Routes
+        Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
+        Route::post('/rooms', [RoomController::class, 'store'])->name('rooms.store');
+        Route::patch('/rooms/{room}', [RoomController::class, 'update'])->name('rooms.update');
+        Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])->name('rooms.destroy');
+    
+        // Manager Ban Routes - CORRECTED ROUTE NAMES HERE
+        Route::get('/bans', [BanController::class, 'index'])->name('bans.index');
+        Route::get('/bans/create', [BanController::class, 'create'])->name('bans.create');
+        Route::post('/bans', [BanController::class, 'store'])->name('bans.store');
+        Route::delete('/bans/{ban}', [BanController::class, 'revoke'])->name('bans.revoke');
+        
+        // User Selection Routes for Manager
+        Route::get('/clients', [BanController::class, 'getClients'])->name('clients.index');
+        Route::get('/receptionists', [BanController::class, 'getReceptionists'])->name('receptionists.index');
+    });
 });
 
-Route::middleware(['auth:receptionist'])->group(function () {
+// Receptionist routes
+Route::middleware(['auth:receptionist', 'ban.check'])->group(function () {
     Route::get('/receptionist/dashboard', function () {
         return Inertia::render('Receptionist/Dashboard', [
             'auth' => [
@@ -74,7 +118,8 @@ Route::middleware(['auth:receptionist'])->group(function () {
     })->name('receptionist.dashboard');
 });
 
-Route::middleware(['auth:client'])->group(function () {
+// Client routes
+Route::middleware(['auth:client', 'ban.check'])->group(function () {
     Route::get('/client/dashboard', function () {
         return Inertia::render('Client/Dashboard', [
             'auth' => [
@@ -123,15 +168,21 @@ Route::middleware(['role:receptionist'])->prefix('staff')->name('staff.')->group
     Route::get('/reservations/{reservation}/delete', [ReservationStaffController::class, 'delete'])->name('reservation.delete');
     Route::delete('/reservations/{reservation}', [ReservationStaffController::class, 'destroy'])->name('reservation.destroy');
     Route::patch('/reservations/{reservation}/approve', [ReservationStaffController::class, 'approveReservation'])->name('reservation.approve');
+}); 
+
+Route::middleware(['auth:admin'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('/reservations', [ReservationStaffController::class, 'index'])->name('reservation.index');
+    Route::get('/reservations/create', [ReservationStaffController::class, 'create'])->name('reservations.create');
+    Route::post('/reservations', [ReservationStaffController::class, 'store'])->name('reservations.store');
+    Route::get('/reservations/{reservation}/edit', [ReservationStaffController::class, 'edit'])->name('reservations.edit');
+    Route::patch('/reservations/{reservation}', [ReservationStaffController::class, 'update'])->name('reservations.update');
+    Route::get('/reservations/{reservation}/delete', [ReservationStaffController::class, 'delete'])->name('reservation.delete');
+    Route::delete('/reservations/{reservation}', [ReservationStaffController::class, 'destroy'])->name('reservation.destroy');
+    Route::patch('/reservations/{reservation}/approve', [ReservationStaffController::class, 'approveReservation'])->name('reservation.approve');
 });
 
-
-
-
-
-
-// reservations routes for the logged-in client
-Route::prefix('client')->name('client.')->middleware(['auth:client'])->middleware(['role:client'])->group(function () {
+// Client reservation routes
+Route::prefix('client')->name('client.')->middleware(['auth:client', 'role:client'])->group(function () {
     // Show all reservations for the logged-in client
     Route::get('/reservations', [ReservationController::class, 'loggedInReservations'])->name('reservations');
     // Show form to create a new reservation
@@ -148,14 +199,10 @@ Route::prefix('client')->name('client.')->middleware(['auth:client'])->middlewar
     Route::delete('/reservations/{reservation}', [ReservationController::class, 'deleteLoggedInReservation'])->name('reservations.destroy');
 });
 
-
-
-
-// Update these routes
+// Stripe routes
 Route::post('/stripe/checkout', [StripeCheckoutController::class, 'checkout'])->name('stripe.checkout');
 Route::get('/stripe/checkout', [StripeCheckoutController::class, 'checkout'])->name('stripe.checkout.get');
 Route::get('/stripe/success', [StripeCheckoutController::class, 'success'])->name('stripe.success');
-
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
