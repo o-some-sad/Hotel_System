@@ -58,7 +58,7 @@ Route::middleware(['auth:admin'])->group(function () {
 });
 
 // Manager routes
-Route::middleware(['auth:manager', 'auth.ban'])->group(function () {
+Route::middleware(['auth:manager'])->group(function () {
     // Manager Dashboard
     Route::get('/manager/dashboard', function () {
         return Inertia::render('Manager/Dashboard', [
