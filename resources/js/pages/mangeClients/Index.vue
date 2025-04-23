@@ -20,14 +20,14 @@ const props = defineProps({
 // Authorization check function
 const canManageClient = (client) => {
     // Admin can manage any client
-    if (props.currentUser?.isAdmin) {
+    if (props.currentUser.isAdmin) {
 
         return true;
     }
 
     // Other staff members can only manage clients they created
-    return client.created_by_id === props.currentUser?.id &&
-        client.created_by_type === props.currentUser?.type;
+    return client.created_by_id === props.currentUser.id &&
+        client.created_by_type === props.currentUser.type;
 };
 
 

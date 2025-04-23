@@ -54,6 +54,7 @@ class ClientController extends Controller
         $data = array_merge($validatedRequest, [
             'created_by_id' => $user ? $user->id : null,
             'created_by_type' => $userType,
+
         ]);
 
         Client::create($data);
@@ -86,7 +87,7 @@ class ClientController extends Controller
         } else {
             unset($validatedRequest['password']);
         }
-        if ($validatedRequest->hasFile('image')) {
+        if ($request->hasFile('image')) {
             if ($client->image) {
                 Storage::disk('public')->delete($client->image);
             }
