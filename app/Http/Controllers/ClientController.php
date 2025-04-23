@@ -16,9 +16,17 @@ class ClientController extends Controller
 
     public function index()
     {
+        [$user, $userType] = $this->getAuthenticatedUser();
+
         $clients = Client::paginate(10);
+
         return Inertia::render('mangeClients/Index', [
-            'clients' => $clients
+            'clients' => $clients,
+            'currentUser' => [
+                'id' => $user->id,
+                'type' => $userType,
+                'isAdmin' => $userType ===  'App\Models\Admin'
+            ]
         ]);
     }
 
@@ -40,7 +48,15 @@ class ClientController extends Controller
             // No image uploaded, set image to null in database
             $validatedRequest['image'] = null;
         }
-        Client::create($validatedRequest);
+
+        [$user, $userType] = $this->getAuthenticatedUser();
+
+        $data = array_merge($validatedRequest, [
+            'created_by_id' => $user ? $user->id : null,
+            'created_by_type' => $userType,
+        ]);
+
+        Client::create($data);
 
         return redirect()->route('clients.index')->with('message', 'Client created successfully');
     }
@@ -49,6 +65,10 @@ class ClientController extends Controller
     public function edit($clientId)
     {
         $client = Client::findOrFail($clientId);
+        [$user, $userType] = $this->getAuthenticatedUser();
+        if ($userType !== 'App\Models\Admin' && ($client->created_by_id !== $user->id || $client->created_by_type !== $userType)) {
+            return redirect()->route('stuff.reservation.index')->with('error', 'You are not authorized to update this reservation');
+        }
 
         return Inertia::render('mangeClients/updateClient', [
             'client' => $client
@@ -84,6 +104,10 @@ class ClientController extends Controller
     public function delete($clientId)
     {
         $client = Client::findOrFail($clientId);
+        [$user, $userType] = $this->getAuthenticatedUser();
+        if ($userType !== 'App\Models\Admin' && ($client->created_by_id !== $user->id || $client->created_by_type !== $userType)) {
+            return redirect()->route('stuff.reservation.index')->with('error', 'You are not authorized to update this reservation');
+        }
 
         return Inertia::render('mangeClients/deleteClient', [
             'client' => $client
@@ -97,6 +121,10 @@ class ClientController extends Controller
 
         if ($client->image && Storage::disk('public')->exists($client->image)) {
             Storage::disk('public')->delete($client->image);
+        }
+        [$user, $userType] = $this->getAuthenticatedUser();
+        if ($userType !== 'App\Models\Admin' && ($client->created_by_id !== $user->id || $client->created_by_type !== $userType)) {
+            return redirect()->route('stuff.reservation.index')->with('error', 'You are not authorized to update this reservation');
         }
 
         $client->delete();

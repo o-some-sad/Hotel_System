@@ -57,7 +57,7 @@ class ReservationStuffController extends Controller
         [$user, $userType] = $this->getAuthenticatedUser();
 
 
-        #TODOHandle who created the reservation later
+
         $data = array_merge($validated, [
             'created_by_id' => $user ? $user->id : null,
             'created_by_type' => $userType,
