@@ -18,6 +18,10 @@ class ReservationController extends Controller
 
     public function loggedInReservations() // show logged-in reservations
     {
+        if($this->role !== 'client'){
+            //aport 403
+            abort(403, 'Unauthorized action.');
+        }
         $client = Client::find($this->user['id']); // suppose this is the logged-in client
         $reservations = $client->reservations()->with('room')->paginate(10); // get paginated reservations with room data
         // dd($client->room);

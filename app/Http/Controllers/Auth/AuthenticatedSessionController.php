@@ -19,12 +19,44 @@ class AuthenticatedSessionController extends Controller
      * Show the login page.
      */
     public function create(): Response
-    {
-        return Inertia::render('auth/Login', [
-            'canResetPassword' => Route::has('password.request'),
-            'status' => session('status'),
+{
+    if (Auth::guard('admin')->check()) {
+        return Inertia::render('Admin/Dashboard', [
+            'auth' => [
+                'user' => auth()->guard('admin')->user()
+            ]
         ]);
     }
+
+    if (Auth::guard('manager')->check()) {
+        return Inertia::render('Manager/Dashboard', [
+            'auth' => [
+                'user' => auth()->guard('manager')->user()
+            ]
+        ]);
+    }
+
+    if (Auth::guard('receptionist')->check()) {
+        return Inertia::render('Receptionist/Dashboard', [
+            'auth' => [
+                'user' => auth()->guard('receptionist')->user()
+            ]
+        ]);
+    }
+
+    if (Auth::guard('client')->check()) {
+        return Inertia::render('Client/Dashboard', [
+            'auth' => [
+                'user' => auth()->guard('client')->user()
+            ]
+        ]);
+    }
+
+    return Inertia::render('auth/Login', [
+        'canResetPassword' => Route::has('password.request'),
+        'status' => session('status'),
+    ]);
+}
 
     /**
      * Handle an incoming authentication request.

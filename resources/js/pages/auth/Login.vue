@@ -1,93 +1,93 @@
-<script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthBase from '@/layouts/AuthLayout.vue';
+<script setup>
 import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
 
-defineProps<{
-    status?: string;
-    canResetPassword: boolean;
-}>();
+defineProps({
+  status: String,
+  canResetPassword: Boolean,
+});
 
 const form = useForm({
-    email: '',
-    password: '',
-    remember: false,
+  email: '',
+  password: '',
+  remember: false,
 });
 
 const submit = () => {
-    form.post(route('login'), {
-        onFinish: () => form.reset('password'),
-    });
+  form.post(route('login'), {
+    onFinish: () => form.reset('password'),
+  });
 };
 </script>
 
 <template>
-    <AuthBase title="Log in to your account" description="Enter your email and password below to log in">
-        <Head title="Log in" />
+  <Head title="welcome to Laralive" />
 
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
-            {{ status }}
+  <div class="flex min-h-screen">
+    <!-- Left Side Image -->
+    <div class="hidden w-1/2 bg-cover bg-center lg:block" style="background-image: url('http://localhost:8000/storage/image.png')">
+      <div class="flex h-full flex-col justify-center p-16 text-white bg-black/30">
+        <h2 class="text-4xl font-bold mb-4">Travelista Tours</h2>
+        <p class="text-lg max-w-md">Travel is the only purchase that enriches you in ways beyond material wealth</p>
+      </div>
+    </div>
+
+    <!-- Right Side Form -->
+    <div class="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2">
+      <div class="mx-auto w-full max-w-md space-y-8">
+        <div class="text-center">
+          <h1 class="text-3xl font-bold text-blue-600">Welcome</h1>
+          <p class="text-gray-500">Login with Email</p>
         </div>
 
-        <form @submit.prevent="submit" class="flex flex-col gap-6">
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="email"
-                        v-model="form.email"
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="form.errors.email" />
-                </div>
+        <form @submit.prevent="submit" class="space-y-6">
+          <div>
+            <label for="email" class="block text-sm font-medium">Email</label>
+            <input
+              id="email"
+              type="email"
+              v-model="form.email"
+              required
+              class="mt-1 w-full rounded-lg border px-4 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="you@example.com"
+            />
+            <p v-if="form.errors.email" class="mt-1 text-sm text-red-500">{{ form.errors.email }}</p>
+          </div>
 
-                <div class="grid gap-2">
-                    <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="5">
-                            Forgot password?
-                        </TextLink>
-                    </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        required
-                        :tabindex="2"
-                        autocomplete="current-password"
-                        v-model="form.password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="form.errors.password" />
-                </div>
-
-                <div class="flex items-center justify-between" :tabindex="3">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" v-model="form.remember" :tabindex="4" />
-                        <span>Remember me</span>
-                    </Label>
-                </div>
-
-                <Button type="submit" class="mt-4 w-full" :tabindex="4" :disabled="form.processing">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Log in
-                </Button>
+          <div>
+            <div class="flex justify-between items-center">
+              <label for="password" class="block text-sm font-medium">Password</label>
+              <a v-if="canResetPassword" :href="route('password.request')" class="text-sm text-blue-500 hover:underline">Forgot?</a>
             </div>
+            <input
+              id="password"
+              type="password"
+              v-model="form.password"
+              required
+              class="mt-1 w-full rounded-lg border px-4 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="••••••••"
+            />
+            <p v-if="form.errors.password" class="mt-1 text-sm text-red-500">{{ form.errors.password }}</p>
+          </div>
 
-            <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
-            </div>
+          <div class="flex items-center space-x-2">
+            <input id="remember" type="checkbox" v-model="form.remember" class="rounded border-gray-300 text-blue-600 shadow-sm" />
+            <label for="remember" class="text-sm text-gray-600">Remember me</label>
+          </div>
+
+          <button
+            type="submit"
+            :disabled="form.processing"
+            class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {{ form.processing ? 'Logging in...' : 'Log In' }}
+          </button>
         </form>
-    </AuthBase>
+
+        <p class="text-center text-sm text-gray-500">
+          Don't have an account?
+          <a :href="route('register')" class="text-blue-500 hover:underline">Register Now</a>
+        </p>
+      </div>
+    </div>
+  </div>
 </template>
