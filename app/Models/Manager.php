@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Notifications\ResetPassword;
+
 
 
 class Manager extends Authenticatable
@@ -60,5 +62,9 @@ class Manager extends Authenticatable
     public function rooms(): MorphMany
     {
         return $this->morphMany(Room::class, 'created_by');
+    }
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPassword($token));
     }
 }
