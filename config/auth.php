@@ -122,7 +122,31 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => 'password_reset_tokens',
-            'expire' => 60,
+            'expire' => 60, // Reset link expires after 60 minutes
+            'throttle' => 60, // Number of seconds before user can request another token
+        ],
+        'clients' => [
+            'provider' => 'clients',
+            'table' => 'password_reset_tokens',
+            'expire' => 60, // Reset link expires after 60 minutes
+            'throttle' => 60,
+        ],
+        'admins' => [
+            'provider' => 'admins',
+            'table' => 'password_reset_tokens',
+            'expire' => 60, // Reset link expires after 60 minutes
+            'throttle' => 60,
+        ],
+        'managers' => [
+            'provider' => 'managers',
+            'table' => 'password_reset_tokens',
+            'expire' => 60, // Reset link expires after 60 minutes
+            'throttle' => 60,
+        ],
+        'receptionists' => [
+            'provider' => 'receptionists',
+            'table' => 'password_reset_tokens',
+            'expire' => 60, // Reset link expires after 60 minutes
             'throttle' => 60,
         ],
     ],

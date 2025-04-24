@@ -32,10 +32,42 @@ class PasswordResetLinkController extends Controller
             'email' => 'required|email',
         ]);
 
-        Password::sendResetLink(
+        // Determine which broker to use based on the email
+        $broker = $this->getBrokerForEmail($request->email);
+
+        // Send the password reset notification
+        $status = Password::broker($broker)->sendResetLink(
             $request->only('email')
         );
 
-        return back()->with('status', __('A reset link will be sent if the account exists.'));
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('status', __('A password reset link has been sent to your email address. This link will expire in 60 minutes.'))
+            : back()->withErrors(['email' => __($status)]);
+    }
+
+    /**
+     * Get the broker to be used based on the given email.
+     */
+    protected function getBrokerForEmail(string $email): string
+    {
+        // Check each user model to determine the appropriate broker
+        if (\App\Models\Client::where('email', $email)->exists()) {
+            return 'clients';
+        }
+
+        if (\App\Models\Admin::where('email', $email)->exists()) {
+            return 'admins';
+        }
+
+        if (\App\Models\Manager::where('email', $email)->exists()) {
+            return 'managers';
+        }
+
+        if (\App\Models\Receptionist::where('email', $email)->exists()) {
+            return 'receptionists';
+        }
+
+        // Default broker
+        return 'users';
     }
 }

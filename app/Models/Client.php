@@ -12,6 +12,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Notifications\ResetPassword;
+
 
 class Client extends Authenticatable implements MustVerifyEmail
 {
@@ -56,5 +58,9 @@ class Client extends Authenticatable implements MustVerifyEmail
     public function createdReservations(): MorphMany
     {
         return $this->morphMany(Reservation::class, 'created_by');
+    }
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPassword($token));
     }
 }

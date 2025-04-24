@@ -140,6 +140,7 @@ Route::middleware(['role:manager'])->group(function () {
     Route::resource('/receptionists', ReceptionistController::class);
 });
 
+//Staff clients routes
 Route::middleware(['role:receptionist'])->group(function () {
     Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
     Route::get('/clients/create', [ClientController::class, 'create'])->name('clients.create');
@@ -149,9 +150,11 @@ Route::middleware(['role:receptionist'])->group(function () {
     Route::get('/clients/{client}/delete', [ClientController::class, 'delete'])->name('clients.delete');
     Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
     Route::post('/clients/{client}/approve', [ClientController::class, 'approve'])->name('clients.approve');
+    //This for search for client in reservation
+    Route::get('/clients/search', [ClientController::class, 'search']);
 });
 
-Route::get('/clients/search', [ClientController::class, 'search']);
+
 
 //Reservation routes for staff only
 Route::middleware(['role:receptionist'])->prefix('staff')->name('staff.')->group(function () {
@@ -165,6 +168,7 @@ Route::middleware(['role:receptionist'])->prefix('staff')->name('staff.')->group
     Route::patch('/reservations/{reservation}/approve', [ReservationStaffController::class, 'approveReservation'])->name('reservation.approve');
 });
 
+//Staff reservation routes
 Route::middleware(['auth:admin'])->prefix('staff')->name('staff.')->group(function () {
     Route::get('/reservations', [ReservationStaffController::class, 'index'])->name('reservation.index');
     Route::get('/reservations/create', [ReservationStaffController::class, 'create'])->name('reservations.create');

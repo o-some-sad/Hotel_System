@@ -77,8 +77,7 @@ const getUserDashboardRoute = () => {
 </script>
 
 <template>
-    <<<<<<< HEAD <Sidebar :collapsible="collapsible" :defaultCollapsed="defaultCollapsed" :variant="variant"
-        class="border-r">
+    <Sidebar :collapsible="collapsible" :defaultCollapsed="defaultCollapsed" :variant="variant" class="border-r">
         <SidebarHeader>
             <SidebarMenu>
                 <!-- Dashboard - using correct guard-specific dashboard routes -->
@@ -88,7 +87,6 @@ const getUserDashboardRoute = () => {
                     </template>
                     Dashboard
                 </SidebarMenuItem>
-
                 <!-- Floors Management - only for admin and manager users -->
                 <SidebarMenuItem v-if="isAdmin || isManager"
                     :href="route(isAdmin ? 'admin.floors.index' : 'manager.floors.index')"
@@ -111,41 +109,41 @@ const getUserDashboardRoute = () => {
                 </SidebarMenuItem>
             </SidebarMenu>
         </SidebarHeader>
-        </Sidebar>
-        <Sidebar :collapsible="collapsible" :defaultCollapsed="defaultCollapsed" :variant="variant" class="border-r">
-            <SidebarHeader>
-                <SidebarMenu>
-                    <!-- Dashboard - using correct guard-specific dashboard routes -->
-                    <SidebarMenuItem :href="getUserDashboardRoute()" :active="route().current('*.dashboard')">
-                        <template #icon>
-                            <LayoutDashboardIcon class="h-4 w-4" />
-                        </template>
-                        Dashboardaaaa
-                    </SidebarMenuItem>
+    </Sidebar>
+    <Sidebar :collapsible="collapsible" :defaultCollapsed="defaultCollapsed" :variant="variant" class="border-r">
+        <SidebarHeader>
+            <SidebarMenu>
+                <!-- Dashboard - using correct guard-specific dashboard routes -->
+                <SidebarMenuItem :href="getUserDashboardRoute()" :active="route().current('*.dashboard')">
+                    <template #icon>
+                        <LayoutDashboardIcon class="h-4 w-4" />
+                    </template>
+                    Dashboardaaaa
+                </SidebarMenuItem>
 
-                    <SidebarMenuItem :href="route('managers.index')">
-                        <template #icon>
-                            <BuildingIcon class="h-4 w-4" />
-                        </template>
-                        Manage Managers
-                    </SidebarMenuItem>
+                <SidebarMenuItem :href="route('managers.index')">
+                    <template #icon>
+                        <BuildingIcon class="h-4 w-4" />
+                    </template>
+                    Manage Managers
+                </SidebarMenuItem>
 
-                    <!-- Floors Management - only for admin and manager users -->
-                    <SidebarMenuItem v-if="isAdmin || isManager"
-                        :href="route(isAdmin ? 'admin.floors.index' : 'manager.floors.index')"
-                        :active="route().current('*.floors.index')">
-                        <template #icon>
-                            <BuildingIcon class="h-4 w-4" />
-                        </template>
-                        Manage Floors
-                    </SidebarMenuItem>
+                <!-- Floors Management - only for admin and manager users -->
+                <SidebarMenuItem v-if="isAdmin || isManager"
+                    :href="route(isAdmin ? 'admin.floors.index' : 'manager.floors.index')"
+                    :active="route().current('*.floors.index')">
+                    <template #icon>
+                        <BuildingIcon class="h-4 w-4" />
+                    </template>
+                    Manage Floors
+                </SidebarMenuItem>
 
 
 
-                    <!-- Add other menu items as needed -->
+                <!-- Add other menu items as needed -->
 
-                    <!-- User Management - only for admin users -->
-                    <!-- <SidebarMenuItem
+                <!-- User Management - only for admin users -->
+                <!-- <SidebarMenuItem
           v-if="isAdmin"
           :href="route('admin.users.index')"
           :active="route().current('*.users.index')"
@@ -155,7 +153,7 @@ const getUserDashboardRoute = () => {
             </template>
             Manage Users
         </SidebarMenuItem> -->
-                </SidebarMenu>
-            </SidebarHeader>
-        </Sidebar>
+            </SidebarMenu>
+        </SidebarHeader>
+    </Sidebar>
 </template>
