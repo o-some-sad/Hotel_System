@@ -1,5 +1,6 @@
 <script setup>
-import {
+
+import { 
     Table,
     TableBody,
     TableCaption,
@@ -8,11 +9,17 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-// Remove Badge import and replace with direct styling
 import { Button } from '@/components/ui/button'
 import { router } from '@inertiajs/vue3'
+import AppLayout from '@/layouts/AppLayout.vue'
 import { onMounted, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+
+// Add breadcrumbs
+const breadcrumbs = [
+    { title: 'Reservations', href: route('staff.reservation.index') },
+];
+
 
 const columns = [
     { id: "id", label: "ID" },
@@ -96,6 +103,7 @@ watch(() => page.props.flash, (flash) => {
 </script>
 
 <template>
+    <AppLayout :title="'Manage Reservations'" :breadcrumbs="breadcrumbs">
     <div class="container mx-auto py-6 px-4">
         <!-- Flash Messages -->
         <div v-if="$page.props.flash?.success"
@@ -290,6 +298,7 @@ watch(() => page.props.flash, (flash) => {
             reservations
         </div>
     </div>
+    </AppLayout>
 </template>
 
 <style scoped>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useForm, Link, router } from '@inertiajs/vue3'
 import {
   Table,
@@ -11,6 +11,16 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import AppLayout from '@/layouts/AppLayout.vue' // Added AppLayout import
+
+
+const breadcrumbs = [
+  { 
+    title: 'Dashboard', 
+    href: props.isAdmin ? route('admin.dashboard') : route('manager.dashboard') 
+  },
+    { title: 'Receptionists', href: route('receptionists.index') },
+]
 
 const props = defineProps({
   receptionists: Object,
@@ -156,11 +166,22 @@ const deleteReceptionist = receptionist => {
 </script>
 
 <template>
-  <div class="container mx-auto py-6 px-4">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Receptionist Management</h1>
-      <Button @click="openFormModal()">Create Receptionist</Button>
-    </div>
+  <AppLayout :title="'Manage Receptionists'" :breadcrumbs="breadcrumbs">
+    <div class="container mx-auto py-6 px-4">
+      <!-- Flash messages -->
+      <div v-if="$page.props.flash.success" class="alert-success mb-4 p-3 rounded">
+        {{ $page.props.flash.success }}
+      </div>
+      <div v-if="$page.props.flash.error" class="alert-danger mb-4 p-3 rounded">
+        {{ $page.props.flash.error }}
+      </div>
+
+      <!-- Existing content remains the same -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Receptionist Management</h1>
+        <Button @click="openFormModal()">Create Receptionist</Button>
+      </div>
+
 
     <Table>
       <TableCaption>A list of all receptionists.</TableCaption>
@@ -320,6 +341,8 @@ const deleteReceptionist = receptionist => {
       </div>
     </div>
   </div>
+</AppLayout>
+
 </template>
 
 <style scoped>
@@ -337,10 +360,46 @@ const deleteReceptionist = receptionist => {
   z-index: 50;
 }
 .modal-content {
-  background: white;
-  padding: 2rem;
+  background: #fff;
+  width: 90vw; /* Use viewport width for better responsiveness */
+  max-width: 420px; /* Maximum width for larger screens */
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   border-radius: 0.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content > h2 {
+  padding: 1.5rem 1.5rem 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.modal-content > form {
+  padding: 0 1.5rem 1.5rem;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+/* Better scrollbar styling */
+.modal-content > form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content > form::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.modal-content > form::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.modal-content > form::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 .input {
   padding: 0.5rem;

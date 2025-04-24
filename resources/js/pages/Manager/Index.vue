@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
+
+import { ref } from 'vue'
 import { useForm, Link, router } from '@inertiajs/vue3'
 import {
   Table,
@@ -11,6 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import AppLayout from '@/layouts/AppLayout.vue'
 
 const props = defineProps({
   managers: Object,
@@ -32,7 +34,7 @@ const form = useForm({
 })
 const resultMessage = ref('')
 
-// Columns
+// Table columns
 const columns = [
   { id: 'image', label: 'Profile' },
   { id: 'name', label: 'Name' },
@@ -42,13 +44,20 @@ const columns = [
   { id: 'actions', label: 'Actions' },
 ]
 
-// Modal controls
-const openFormModal = (manager = null) => {
+const breadcrumbs = [
+  {
+    title: 'Dashboard', 
+    href: props.isAdmin ? route('admin.dashboard') : route('manager.dashboard') 
+  },
+  { title: 'Managers', href: route('managers.index') },
+]
+
+// Open modal (create or edit)
+function openFormModal(manager = null) {
   form.clearErrors()
   form.reset()
   verifyPassword.value = ''
   resultMessage.value = ''
-
   if (manager) {
     formMode.value = 'edit'
     form.id = manager.id
@@ -56,170 +65,151 @@ const openFormModal = (manager = null) => {
     form.email = manager.actual_email
     form.nationalId = manager.nationalId
     form.password = ''
-    form.image = null
   } else {
     formMode.value = 'create'
   }
-
   showFormModal.value = true
 }
 
-const closeModal = () => {
+// Close modal
+function closeModal() {
   showFormModal.value = false
   form.reset()
   verifyPassword.value = ''
   resultMessage.value = ''
 }
 
-// Validation helpers
-const validateForm = () => {
+// Validation
+function validateForm() {
   form.clearErrors()
-  let isValid = true
-
+  let valid = true
   if (!/^[A-Za-z ]{3,30}$/.test(form.name)) {
     form.errors.name = 'Name must be 3–30 letters and spaces only.'
-    isValid = false
+    valid = false
   }
-
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
     form.errors.email = 'Email is not valid.'
-    isValid = false
+    valid = false
   }
-
   if (!/^\d{14}$/.test(form.nationalId)) {
     form.errors.nationalId = 'National ID must be exactly 14 digits.'
-    isValid = false
+    valid = false
   }
-
+  // Password validation: required on create, optional on edit
   if (formMode.value === 'create' || form.password) {
     if (form.password.length < 6) {
       form.errors.password = 'Password must be at least 6 characters.'
-      isValid = false
+      valid = false
     }
     if (form.password !== verifyPassword.value) {
       form.errors.verifyPassword = 'Passwords do not match.'
-      isValid = false
+      valid = false
     }
   }
-
-  return isValid
+  return valid
 }
 
-// Submit logic
-const submitForm = () => {
+// Submit form
+function submitForm() {
   if (!validateForm()) return
-
-  const formData = new FormData()
-
-  formData.append('name', form.name)
-  formData.append('email', form.email)
-  formData.append('nationalId', form.nationalId)
-
+  const data = new FormData()
+  data.append('name', form.name)
+  data.append('email', form.email)
+  data.append('nationalId', form.nationalId)
   if (form.password) {
-    formData.append('password', form.password)
+    data.append('password', form.password)
   }
-
   if (form.image) {
-    formData.append('image', form.image)
+    data.append('image', form.image)
   }
-
   if (formMode.value === 'edit') {
-    formData.append('_method', 'PATCH')
+    data.append('_method', 'PATCH')
   }
-
-  const options = {
-    preserveScroll: true,
-    forceFormData: true,
-    onSuccess: (page) => {
-      resultMessage.value = page.props.flash?.success || 'Operation completed successfully.'
+  router.post(
+    formMode.value === 'create' ? '/managers' : `/managers/${form.id}`,
+    data,
+    {
+      preserveScroll: true,
+      forceFormData: true,
+      onSuccess: (page) => {
+        resultMessage.value = page.props.flash.success || 'Operation successful.'
+        showFormModal.value = false
+      }
     }
-  }
-
-  if (formMode.value === 'create') {
-    router.post('/managers', formData, options)
-  } else {
-    router.post(`/managers/${form.id}`, formData, options)
-  }
+  )
 }
 
-const deleteManager = mgr => {
-  if (confirm(`Are you sure you want to delete this manager?\nID: ${mgr.id}\nName: ${mgr.name}\nEmail: ${mgr.email}`)) {
-    router.delete(`/managers/${mgr.id}`, {
-      onSuccess: (page) => {
-        alert(page.props.flash?.success || 'Manager deleted successfully.')
-      },
-      onError: (error) => {
-        alert(error.response.data.message || 'An error occurred while deleting the manager.')
-      }
-    })
-  }
+// Delete manager
+function deleteManager(mgr) {
+  if (!confirm(`Delete manager ${mgr.name}?`)) return
+  router.delete(`/managers/${mgr.id}`, {
+    onSuccess: (page) => alert(page.props.flash.success || 'Deleted.'),
+    onError: (error) => alert(error.response.data.message || 'Error deleting.'),
+  })
 }
 </script>
 
 <template>
-  <div class="container mx-auto py-6 px-4">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Manager Management</h1>
-      <Button @click="openFormModal()" v-if="isAdmin">Create Manager</Button>
-    </div>
+  <AppLayout :title="'Manage Managers'" :breadcrumbs="breadcrumbs">
+    <div class="container py-6">
+      <!-- Flash -->
+      <div v-if="$page.props.flash.success" class="alert-success mb-4">
+        {{ $page.props.flash.success }}
+      </div>
+      <div v-if="$page.props.flash.error" class="alert-danger mb-4">
+        {{ $page.props.flash.error }}
+      </div>
 
-    <Table>
-      <TableCaption>A list of all managers.</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead v-for="col in columns" :key="col.id">{{ col.label }}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow v-for="mgr in managers.data" :key="mgr.id" class="hover:bg-muted/50">
-          <TableCell>
-            <img :src="mgr.image" class="h-10 w-10 rounded-full object-cover" />
-          </TableCell>
-          <TableCell>{{ mgr.name }}</TableCell>
-          <TableCell>{{ mgr.email }}</TableCell>
-          <TableCell>{{ mgr.actual_email }}</TableCell>
-          <TableCell>{{ mgr.nationalId }}</TableCell>
-          <TableCell>
-            <div class="flex space-x-2">
-              <Button @click="openFormModal(mgr)" v-if="isAdmin || mgr.id === id" size="sm" variant="outline">
-                Edit
-              </Button>
-              <Button @click="deleteManager(mgr)" v-if="isAdmin" size="sm" variant="destructive">
-                Delete
-              </Button>
-            </div>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Managers</h1>
+        <Button @click="openFormModal()" v-if="isAdmin">Create Manager</Button>
+      </div>
 
-    <!-- Pagination -->
-    <nav class="mt-6 flex justify-center" aria-label="Page navigation">
-      <ul class="inline-flex items-center -space-x-px">
-        <li v-for="link in managers.links" :key="link.label">
-          <Link
-            v-if="link.url"
-            :href="link.url"
-            v-html="link.label"
-            :class="[
-              'px-3 py-1 border rounded mx-1',
-              link.active ? 'bg-blue-500 text-white' : 'bg-white text-blue-600'
-            ]"
-          />
-          <span
-            v-else
-            v-html="link.label"
-            class="px-3 py-1 border rounded mx-1 text-gray-500 cursor-default"
-          />
-        </li>
-      </ul>
-    </nav>
+      <!-- Managers Table -->
+      <Table>
+        <TableCaption>All managers</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead v-for="col in columns" :key="col.id">{{ col.label }}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow v-for="mgr in managers.data" :key="mgr.id">
+            <TableCell><img :src="mgr.image" class="h-10 w-10 rounded-full"/></TableCell>
+            <TableCell>{{ mgr.name }}</TableCell>
+            <TableCell>{{ mgr.email }}</TableCell>
+            <TableCell>{{ mgr.actual_email }}</TableCell>
+            <TableCell>{{ mgr.nationalId }}</TableCell>
+            <TableCell>
+              <div class="flex space-x-2">
+                <Button size="sm" variant="outline" @click="() => openFormModal(mgr)" v-if="isAdmin || mgr.id === id">
+                  Edit
+                </Button>
+                <Button size="sm" variant="destructive" @click="() => deleteManager(mgr)" v-if="isAdmin">
+                  Delete
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
 
-    <!-- Modal -->
-    <div v-if="showFormModal" class="modal-overlay">
+      <!-- Pagination -->
+      <nav class="mt-6 flex justify-center">
+        <ul class="inline-flex space-x-1">
+          <li v-for="link in managers.links" :key="link.label">
+            <Link v-if="link.url" :href="link.url" v-html="link.label"
+              :class="['px-3 py-1 border rounded', link.active ? 'bg-blue-500 text-white' : '']" />
+            <span v-else v-html="link.label" class="px-3 py-1 border text-gray-500"></span>
+          </li>
+        </ul>
+      </nav>
+
+      <div v-if="showFormModal" class="modal-overlay">
       <div class="modal-content max-w-lg w-full">
         <h2 class="text-xl font-semibold mb-4">
-          {{ formMode === 'create' ? 'Create Manager' : 'Edit Manager' }}
+          {{ formMode === 'create' ? 'Create Receptionist' : 'Edit Receptionist' }}
         </h2>
 
         <!-- Result Message -->
@@ -310,39 +300,78 @@ const deleteManager = mgr => {
         </form>
       </div>
     </div>
-  </div>
+    </div>
+  </AppLayout>
 </template>
 
 <style scoped>
-.container {
-  max-width: 1200px;
-}
+.container { max-width: 1200px; }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0,0,0,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 50;
 }
 .modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  /* use viewport units so ‘90%’ always means 90% of the window height */
+  max-height: 90vh;           
+  display: flex;              
+  flex-direction: column;     
+  overflow: hidden;           /* hide any overflow at the wrapper level */
+  border-radius: .5rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  padding: 0;                 /* we’ll push padding into the children */
 }
+
+/* keep your title/header always visible */
+.modal-content > h2 {
+  padding: 1rem;
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+/* let the form fill the rest and scroll internally */
+.modal-content > form {
+  padding: 1rem;
+  flex: 1 1 auto;
+  overflow-y: auto;           /* only vertical scroll */
+}
+
+/* optional: slim scroll-bar so it’s less obtrusive */
+.modal-content > form::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-content > form::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
+
 .input {
-  padding: 0.5rem;
+  padding: .5rem;
   border: 1px solid #cbd5e0;
-  border-radius: 0.375rem;
-  transition: border 0.2s;
+  border-radius: .375rem;
+  width: 100%;
 }
 .input:focus {
-  border-color: #3b82f6;
   outline: none;
+  border-color: #3b82f6;
 }
-.input.error {
-  border-color: #ef4444;
+.alert-success {
+  background: #d1fae5;
+  border: 1px solid #10b981;
+  color: #065f46;
+  padding: .75rem;
+  border-radius: .375rem;
+}
+.alert-danger {
+  background: #fce7f3;
+  border: 1px solid #db2777;
+  color: #831843;
+  padding: .75rem;
+  border-radius: .375rem;
 }
 </style>
