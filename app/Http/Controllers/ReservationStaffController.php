@@ -173,6 +173,10 @@ class ReservationStaffController extends Controller
         $reservation->is_approved = 1;
         $reservation->save();
 
+        if ($reservation->payment_id === null) {
+            return to_route('staff.reservation')->with('error', 'Failed to approve the the reservation not paid');
+        }
+
         //send notification to client
         $reservation->client->notify(new ReservationApproved($reservation));
 

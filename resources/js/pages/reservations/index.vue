@@ -179,6 +179,14 @@ watch(() => page.props.flash, (flash) => {
                         </TableCell>
                         <TableCell class="font-semibold">{{ formatPrice(reservation.price) }}</TableCell>
                         <TableCell>
+                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
+                                :class="reservation.payment_id
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'">
+                                {{ reservation.payment_id ? 'Paid' : 'Unpaid' }}
+                            </span>
+                        </TableCell>
+                        <TableCell>
                             <!-- Replace Badge with custom styled span -->
                             <span @click="toggleApproval(reservation)"
                                 class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold cursor-pointer"
@@ -191,7 +199,7 @@ watch(() => page.props.flash, (flash) => {
                         <TableCell>
                             <div class="flex space-x-2">
                                 <!-- Show accept/refuse buttons only for pending reservations -->
-                                <template v-if="!reservation.is_approved">
+                                <template v-if="!reservation.is_approved && reservation.payment_id">
                                     <button @click="toggleApproval(reservation)"
                                         class="p-1 border border-green-300 bg-green-50 text-green-700 rounded-md hover:bg-green-100"
                                         title="Approve reservation">
