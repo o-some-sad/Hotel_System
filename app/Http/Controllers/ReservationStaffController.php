@@ -15,11 +15,17 @@ use Illuminate\Auth\Events\Validated;
 class ReservationStaffController extends Controller
 {
     //Show all reservation to the staff
-    public function index()
+    public function index(Request $request)
     {
         [$user, $userType] = $this->getAuthenticatedUser();
 
         $reservations = Reservation::with(['client', 'room'])->paginate(10);
+
+        if ($request->wantsJson() || $request->query('format') === 'json') {
+            return response()->json([
+                'reservations' => $reservations
+            ]);
+        }
 
         return Inertia::render('reservations/index', [
             'reservations' => $reservations,
