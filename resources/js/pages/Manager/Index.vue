@@ -134,7 +134,14 @@ function submitForm() {
       onSuccess: (page) => {
         resultMessage.value = page.props.flash.success || 'Operation successful.'
         showFormModal.value = false
-      }
+      },
+      onError: (errors) => {
+        if (errors && typeof errors === 'object') {
+          Object.keys(errors).forEach((key) => {
+            form.errors[key] = errors[key]
+          })
+        }
+      },
     }
   )
 }
