@@ -39,13 +39,17 @@ class HandleInertiaRequests extends Middleware
     {
         $guard = $this->getCurrentGuard();
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
-
+        $user = $request->user('admin') ?? 
+           $request->user('manager') ?? 
+           $request->user('receptionist') ?? 
+           $request->user('client') ?? 
+           $request->user();
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? $request->user() : $user,
                 'guard' => $guard,
             ],
             'ziggy' => [

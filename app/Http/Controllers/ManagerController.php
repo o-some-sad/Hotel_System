@@ -51,6 +51,14 @@ class ManagerController extends Controller
     public function store(Request $request)
     {
 
+    $validatedData = $request->validate([
+        'name' => 'required|regex:/^[\pL\s]+$/u',
+        'email' => 'required|email|unique:managers,actual_email',
+        'password' => 'required|min:6',
+        'nationalId' => 'required|digits:14|unique:managers,nationalId',
+        'image' => 'nullable|image|max:2048',
+    ]);
+
         if($this->role !== 'admin') {
             return to_route('managers.index');
         }
@@ -66,18 +74,18 @@ class ManagerController extends Controller
             $imagePath = 'images/'.$filename;        
         }
 
-        $latestId = Manager::max('id') ?? 0;
+        $latestId = Manager::withTrashed()->max('id') ?? 0;
         $newId = $latestId + 1;
 
 
         $newManager = [
-            'name' => $request->name,
-            'actual_email' => $request->email,
-            'email' => $this->generateVirtualEmail( $newId),
-            'password' => bcrypt($request->password),
-            'nationalId' => $request->nationalId,
-            'image' => $imagePath,
-            'admin_id' => $this->user['id'],
+        'name' => $validatedData['name'],
+        'actual_email' => $validatedData['email'],
+        'email' => $this->generateVirtualEmail($newId),
+        'password' => bcrypt($validatedData['password']),
+        'nationalId' => $validatedData['nationalId'],
+        'image' => $imagePath,
+        'admin_id' => $this->user['id'],
         ];
 
         Manager::create($newManager);
@@ -92,6 +100,13 @@ class ManagerController extends Controller
         if(! $manager) {
             return back()->with('failed', "Manager not found");
         }
+
+        $validatedData = $request->validate([
+            'name' => 'required|regex:/^[\pL\s]+$/u',
+            'email' => 'required|email|unique:managers,actual_email,' . $manager->id,
+            'nationalId' => 'required|digits:14|unique:managers,nationalId,' . $manager->id,
+            'image' => 'nullable|image|max:2048',
+        ]);
         
         if ($request->hasFile('image')) {
             $filePath = public_path($manager->image);
