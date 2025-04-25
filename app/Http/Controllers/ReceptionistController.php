@@ -47,86 +47,85 @@ class ReceptionistController extends Controller
         return to_route('receptionists.index');
     }
 
-    public function store(Request $request)
-    {
-        $imagePath = 'images/default.jpg';
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
+public function store(Request $request)
+{
+    $validatedData = $request->validate([
+        'name' => 'required|regex:/^[\pL\s]+$/u',
+        'email' => 'required|email|unique:receptionists,actual_email',
+        'password' => 'required|min:6',
+        'nationalId' => 'required|digits:14|unique:receptionists,nationalId',
+        'image' => 'nullable|image|max:2048',
+    ]);
 
-            $filename = uniqid().'.'.$file->getClientOriginalExtension();
-        
-            $file->move(public_path('images/receptionist'), $filename);
-            
-            $imagePath = 'images/receptionist/'.$filename;        
-        }
-
-        $latestId = Receptionist::max('id') ?? 0;
-        $newId = $latestId + 1;
-
-
-        $newManager = [
-            'name' => $request->name,
-            'actual_email' => $request->email,
-            'email' => $this->generateVirtualEmail( $newId),
-            'password' => bcrypt($request->password),
-            'nationalId' => $request->nationalId,
-            'image' => $imagePath,
-        ];
-
-        if($this->role === 'admin') {
-            $admin = Admin::find($this->user['id']);
-            $admin->receptionists()->create($newManager);
-        }else {
-            $manager = Manager::find($this->user['id']);
-            $manager->receptionists()->create($newManager);
-        }
-
-        return back()->with('success', "Manager created successfully You can now login with the email: {$newManager['email']}");
+    $imagePath = 'images/default.jpg';
+    if ($request->hasFile('image')) {
+        $file = $request->file('image');
+        $filename = uniqid().'.'.$file->getClientOriginalExtension();
+        $file->move(public_path('images/receptionist'), $filename);
+        $imagePath = 'images/receptionist/'.$filename;        
     }
 
-    public function update($id,Request $request)
-    {
+    $latestId = Receptionist::withTrashed()->max('id') ?? 0;
+    $newId = $latestId + 1;
 
-        if ($this->role !== 'admin' ) {
-            $manager = Manager::find($this->user['id']);
-            $editable_ids = $manager->receptionists()->pluck('id')->toArray();
-            if (!in_array($id, $editable_ids)) {
-                return to_route('receptionists.index');
-            }
-        }
+    $newReceptionist = [
+        'name' => $validatedData['name'],
+        'actual_email' => $validatedData['email'],
+        'email' => $this->generateVirtualEmail($newId),
+        'password' => bcrypt($validatedData['password']),
+        'nationalId' => $validatedData['nationalId'],
+        'image' => $imagePath,
+    ];
 
-        $receptionist = Receptionist::find($id);
-        if(! $receptionist) {
-            return back()->with('failed', "Receptionist not found");
-        }
-
-        
-        if ($request->hasFile('image')) {
-            $filePath = public_path($receptionist->image);
-
-            if (
-                $receptionist->image && 
-                $receptionist->image !== 'images/default.jpg' && 
-                file_exists($filePath)) {
-
-                    unlink($filePath);
-            }
-            $file = $request->file('image');
-
-            $filename = uniqid().'.'.$file->getClientOriginalExtension();
-        
-            $file->move(public_path('images/receptionist'), $filename);
-        
-            $imagePath = 'images/receptionist/'.$filename;    
-            $receptionist->image = $imagePath;
-        }
-        $receptionist->name = $request->name;
-        $receptionist->actual_email = $request->email;
-        $receptionist->nationalId = $request->nationalId;
-        $receptionist->save();
-
-        return back()->with('success', "Receptionist updated successfully You can now login with the email: {$manager['email']}");
+    if($this->role === 'admin') {
+        $admin = Admin::find($this->user['id']);
+        $admin->receptionists()->create($newReceptionist);
+    } else {
+        $manager = Manager::find($this->user['id']);
+        $manager->receptionists()->create($newReceptionist);
     }
+
+    return back()->with('success', "Receptionist created successfully. You can now login with the email: {$newReceptionist['email']}");
+}
+
+public function update($id, Request $request)
+{
+    $receptionist = Receptionist::findOrFail($id);
+
+    if ($this->role !== 'admin') {
+        $manager = Manager::find($this->user['id']);
+        $editable_ids = $manager->receptionists()->pluck('id')->toArray();
+        if (!in_array($id, $editable_ids)) {
+            return to_route('receptionists.index');
+        }
+    }
+
+    $validatedData = $request->validate([
+        'name' => 'required|regex:/^[\pL\s]+$/u',
+        'email' => 'required|email|unique:receptionists,actual_email,' . $receptionist->id,
+        'nationalId' => 'required|digits:14|unique:receptionists,nationalId,' . $receptionist->id,
+        'image' => 'nullable|image|max:2048',
+    ]);
+
+    if ($request->hasFile('image')) {
+        $filePath = public_path($receptionist->image);
+        if ($receptionist->image !== 'images/default.jpg' && file_exists($filePath)) {
+            unlink($filePath);
+        }
+        $file = $request->file('image');
+        $filename = uniqid().'.'.$file->getClientOriginalExtension();
+        $file->move(public_path('images/receptionist'), $filename);
+        $imagePath = 'images/receptionist/'.$filename;    
+        $receptionist->image = $imagePath;
+    }
+
+    $receptionist->name = $validatedData['name'];
+    $receptionist->actual_email = $validatedData['email'];
+    $receptionist->nationalId = $validatedData['nationalId'];
+    $receptionist->save();
+
+    return back()->with('success', "Receptionist updated successfully. You can now login with the email: {$receptionist->email}");
+}
 
     public function show($id)
     {
@@ -150,11 +149,11 @@ class ReceptionistController extends Controller
                     unlink($filePath);
             }
             $receptionist->delete();
-            return back()->with('success', `Manager deleted successfully 
+            return back()->with('success', `Receptionist deleted successfully 
                 Name : {$receptionist['name']}
                 Email : {$receptionist['email']}`);
         } else {
-            return back()->with('failed', `Failed to delete manager
+            return back()->with('failed', `Failed to delete receptionist
                 Name : {$receptionist['name']}
                 Email : {$receptionist['email']}`);
         }

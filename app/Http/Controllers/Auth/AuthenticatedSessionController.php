@@ -21,30 +21,20 @@ class AuthenticatedSessionController extends Controller
     /**
      * Show the login page.
      */
-    public function create(): Response
+    public function create()
 {
     if (Auth::guard('admin')->check()) {
-        return Inertia::render('Admin/Dashboard', [
-            'auth' => [
-                'user' => auth()->guard('admin')->user()
-            ]
-        ]);
+        return to_route('admin.dashboard');
+
     }
 
     if (Auth::guard('manager')->check()) {
-        return Inertia::render('Manager/Dashboard', [
-            'auth' => [
-                'user' => auth()->guard('manager')->user()
-            ]
-        ]);
+        return to_route('manager.dashboard');
+
     }
 
     if (Auth::guard('receptionist')->check()) {
-        return Inertia::render('Receptionist/Dashboard', [
-            'auth' => [
-                'user' => auth()->guard('receptionist')->user()
-            ]
-        ]);
+        return to_route('receptionist.dashboard');
     }
 
     if (Auth::guard('client')->check()) {
